@@ -28,7 +28,7 @@
 #import <bsm/audit_kevents.h>
 #import <security/audit/audit_ioctl.h>
 
-@interface ProcessInfo()
+@interface ProcInfo()
 
 /* INSTANCE VARIABLES */
 
@@ -40,7 +40,7 @@
 
 @end
 
-@implementation ProcessInfo
+@implementation ProcInfo
 
 //init
 -(id)init

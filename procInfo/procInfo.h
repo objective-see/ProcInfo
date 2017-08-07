@@ -1,5 +1,5 @@
 //
-//  File: processInfo.h
+//  File: procInfo.h
 //  Project: Proc Info
 //
 //  Created by: Patrick Wardle
@@ -7,8 +7,8 @@
 //  License:    Creative Commons Attribution-NonCommercial 4.0 International License
 //
 
-#ifndef processInfo_h
-#define processInfo_h
+#ifndef procInfo_h
+#define procInfo_h
 
 #import <libproc.h>
 #import <sys/sysctl.h>
@@ -37,7 +37,7 @@ typedef void (^ProcessCallbackBlock)(Process*);
 
 /* OBJECT: PROCESS INFO */
 
-@interface ProcessInfo : NSObject
+@interface ProcInfo : NSObject
 
 //start monitoring
 -(BOOL)start:(ProcessCallbackBlock)callback;
@@ -136,7 +136,6 @@ typedef void (^ProcessCallbackBlock)(Process*);
 
 //init w/ an info dictionary
 -(id)init:(NSString*)path;
-
 
 @end
 

@@ -21,7 +21,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		7D6E875C1F38198E00D6BD7C /* libprocInfo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; name = libprocInfo.a; path = /Users/patrickw/Documents/GitHub/ProcInfo/build/Debug/libprocInfo.a; sourceTree = "<absolute>"; };
+		7D6E875E1F381EC300D6BD7C /* libprocInfo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; name = libprocInfo.a; path = /Users/patrickw/Documents/GitHub/ProcInfo/build/Debug/libprocInfo.a; sourceTree = "<absolute>"; };
 		7DD0A91F1F35A04B000EA15D /* ProcessMonitor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ProcessMonitor.m; path = procInfo/ProcessMonitor.m; sourceTree = SOURCE_ROOT; };
 		7DD0A9211F35A04B000EA15D /* Binary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Binary.m; path = procInfo/Binary.m; sourceTree = SOURCE_ROOT; };
 		7DD0A9221F35A04B000EA15D /* Process.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Process.m; path = procInfo/Process.m; sourceTree = SOURCE_ROOT; };
@@ -113,7 +113,7 @@
 			);
 			name = procInfo;
 			productName = processMonitor;
-			productReference = 7D6E875C1F38198E00D6BD7C /* libprocInfo.a */;
+			productReference = 7D6E875E1F381EC300D6BD7C /* libprocInfo.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -161,7 +161,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#copy library into top-level lib folder\ncp $CODESIGNING_FOLDER_PATH $SRCROOT/lib/";
+			shellScript = "#move library into top-level lib folder\nmv $CODESIGNING_FOLDER_PATH $SRCROOT/lib/";
 		};
 /* End PBXShellScriptBuildPhase section */
 
