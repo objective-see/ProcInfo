@@ -13,7 +13,7 @@ To use the Proc Info library:
    b) to enumerate existing processes invoke the `currentProcesses` method<br>
    c) to monitor process events, declare a callback block and invoke the `start:` method<br>
 
-or just download the [demo project](https://github.com/objective-see/ProcInfo/), to take it for a spin! 
+...or just download the [demo project](https://github.com/objective-see/ProcInfoExample), to take it for a spin! 
 
 ```Objective-C
 #import "procInfo.h"
