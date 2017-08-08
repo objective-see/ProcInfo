@@ -117,7 +117,7 @@ NSLog(@"process: %@", process);
 
 //output
 process: 
-pid: 10277
+pid: 1337
 path: /Applications/Calculator.app/Contents/MacOS/Calculator
 user: 501
 args: (
@@ -226,7 +226,7 @@ Executing this code, and starting a process such as `Calculator.app` results in 
 # ./procInfoExample:
 
 process start: 
-pid: 10394
+pid: 1337
 path: /Applications/Calculator.app/Contents/MacOS/Calculator
 user: 501
 args: (
@@ -266,7 +266,7 @@ signing info: {
         "Apple Root CA"
     );
 } (isApple: 1 / isAppStore: 0)
-2017-08-07 08:49:02.199 procInfoExample[10393:3296896] process exit: 10394
+2017-08-07 08:49:02.199 procInfoExample[10393:3296896] process exit: 1337
 ```
 It should be noted that if the Proc Info library is not running with root privileges, or is executed on an older version of macOS (pre 10.12.4) it will only monitor for application events (i.e. not terminal nor background processes). This is because in order to safely monitor for audit events, root and recent version of macOS is required.
 
