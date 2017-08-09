@@ -493,7 +493,7 @@ bail:
 -(NSString *)description
 {
     //pretty print
-    return [NSString stringWithFormat: @"pid: %d\npath: %@\nuser: %d\nargs: %@\nancestors: %@\nbinary: %@", self.pid, self.path, self.user, self.arguments, self.ancestors, self.binary];
+    return [NSString stringWithFormat: @"pid: %d\npath: %@\nuser: %d\nargs: %@\nancestors: %@\nbinary:\n %@", self.pid, self.path, self.user, self.arguments, self.ancestors, self.binary];
 }
 
 //class method to get parent of arbitrary process
