@@ -6,7 +6,7 @@ Love this library or want to support it? Check out my [patreon page](https://www
 ##### Quick Start (tl;dr)
 
 To use the Proc Info library: 
-1. add the Proc Info library (`libprocInfo.a`) and Apple's OpenBSM library (`libbsm.tbd`) to your Xcode Project
+1. add the Proc Info library (`lib/libprocInfo.a`) and Apple's OpenBSM library (`libbsm.tbd`) to your Xcode Project
 2. import the Proc Info library header file (`procInfo.h`)
 3. instantiate a `Proc Info` object
 4. a) to retrieve information about a running process invoke the `init:` method<br>
@@ -59,7 +59,7 @@ Moreover, it is an important component of tools designed to facilitate Mac malwa
 As detailed in the 'Quick Start' section, to use Proc Info in your Xcode project perform the following steps. 
 
 **1. Add the Proc Info library to your Xcode project:**<br>
-To add the Proc Info library to your Xcode project simply drag and drop the library (`libprocInfo.a`), into the File Navigator. In the resulting 'file add' popup, make sure the 'Copy items if needed' option is selected:
+To add the Proc Info library to your Xcode project simply drag and drop the library (`lib/libprocInfo.a`), into the File Navigator. In the resulting 'file add' popup, make sure the 'Copy items if needed' option is selected:
 <p align="center"><img src="https://objective-see.com/images/PI/addLib.png" width="600"></p>
 
 **2. Add Apple's OpenBSM library to your Xcode project:**<br>
