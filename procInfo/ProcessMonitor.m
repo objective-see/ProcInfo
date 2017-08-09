@@ -51,10 +51,10 @@
     {
         //make sure OS is supported
         // ->for now, OS X 10.8+ though could be earlier?
-        if(YES != isSupportedOS())
+        if(YES != PI_isSupportedOS())
         {
             //err msg
-            NSLog(@"ERROR: %@ is not a supported OS", getOSVersion());
+            NSLog(@"ERROR: %@ is not a supported OS", PI_getOSVersion());
             
             //unset
             self = nil;
@@ -80,7 +80,7 @@ bail:
     self.processCallback = callback;
     
     //get OS version info
-    osVersionInfo = getOSVersion();
+    osVersionInfo = PI_getOSVersion();
 
     //for full monitoring, gotta be root and macOS 10.12.4 ('safe', as fixed kernel crash)
     if( (0 == geteuid()) &&
@@ -707,7 +707,7 @@ bail:
     
     //iterate over all pids
     // ->init process object w/ pid/path, etc
-    for(NSNumber* pid in enumerateProcesses())
+    for(NSNumber* pid in PI_enumerateProcesses())
     {
         //skip 'blank' pids
         if(0 == pid.unsignedShortValue)

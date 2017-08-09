@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7D6E87771F3BD0FA00D6BD7C /* libprocInfo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7D6E87761F3BD0FA00D6BD7C /* libprocInfo.a */; };
 		7DD0A92D1F35A04B000EA15D /* ProcessMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DD0A91F1F35A04B000EA15D /* ProcessMonitor.m */; };
 		7DD0A92F1F35A04B000EA15D /* Binary.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DD0A9211F35A04B000EA15D /* Binary.m */; };
 		7DD0A9301F35A04B000EA15D /* Process.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DD0A9221F35A04B000EA15D /* Process.m */; };
@@ -21,7 +22,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		7D6E876B1F392B3B00D6BD7C /* libprocInfo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libprocInfo.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		7D6E87761F3BD0FA00D6BD7C /* libprocInfo.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libprocInfo.a; path = lib/libprocInfo.a; sourceTree = SOURCE_ROOT; };
 		7DD0A91F1F35A04B000EA15D /* ProcessMonitor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ProcessMonitor.m; path = procInfo/ProcessMonitor.m; sourceTree = SOURCE_ROOT; };
 		7DD0A9211F35A04B000EA15D /* Binary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Binary.m; path = procInfo/Binary.m; sourceTree = SOURCE_ROOT; };
 		7DD0A9221F35A04B000EA15D /* Process.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Process.m; path = procInfo/Process.m; sourceTree = SOURCE_ROOT; };
@@ -40,6 +41,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7D6E87771F3BD0FA00D6BD7C /* libprocInfo.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -54,12 +56,21 @@
 			name = include;
 			sourceTree = "<group>";
 		};
+		7D6E87751F3BD0C200D6BD7C /* lib */ = {
+			isa = PBXGroup;
+			children = (
+				7D6E87761F3BD0FA00D6BD7C /* libprocInfo.a */,
+			);
+			name = lib;
+			path = processMonitor;
+			sourceTree = "<group>";
+		};
 		7D83A9DB1EB6465D001506F0 = {
 			isa = PBXGroup;
 			children = (
-				7D6E875D1F381BC600D6BD7C /* include */,
 				7D83A9E61EB6465D001506F0 /* src */,
-				7D6E876B1F392B3B00D6BD7C /* libprocInfo.a */,
+				7D6E875D1F381BC600D6BD7C /* include */,
+				7D6E87751F3BD0C200D6BD7C /* lib */,
 			);
 			sourceTree = "<group>";
 		};
@@ -114,7 +125,7 @@
 			);
 			name = procInfo;
 			productName = processMonitor;
-			productReference = 7D6E876B1F392B3B00D6BD7C /* libprocInfo.a */;
+			productReference = 7D6E87781F3BD0FA00D6BD7C /* libprocInfo.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -162,7 +173,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#copy library into top-level lib folder\ncp $CODESIGNING_FOLDER_PATH $SRCROOT/lib/";
+			shellScript = "#move library into top-level lib folder\nmv $CODESIGNING_FOLDER_PATH $SRCROOT/lib/";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -276,6 +287,10 @@
 				CODE_SIGN_IDENTITY = "";
 				DEVELOPMENT_TEAM = VBG97UB4TA;
 				EXECUTABLE_PREFIX = lib;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/lib",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -286,6 +301,10 @@
 				CODE_SIGN_IDENTITY = "";
 				DEVELOPMENT_TEAM = VBG97UB4TA;
 				EXECUTABLE_PREFIX = lib;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/lib",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

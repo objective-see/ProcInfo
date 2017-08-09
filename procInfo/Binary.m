@@ -60,7 +60,7 @@
     {
         //find app bundle from binary
         // ->likely not an application if this fails
-        appBundle = findAppBundle(path);
+        appBundle = PI_findAppBundle(path);
     }
     
     //found app bundle?

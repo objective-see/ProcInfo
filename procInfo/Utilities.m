@@ -19,7 +19,7 @@
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
 //get OS version
-NSDictionary* getOSVersion()
+NSDictionary* PI_getOSVersion()
 {
     //os version info
     NSMutableDictionary* osVersionInfo = nil;
@@ -82,7 +82,7 @@ bail:
 
 //is current OS version supported?
 // ->for now, just OS X 10.8+
-BOOL isSupportedOS()
+BOOL PI_isSupportedOS()
 {
     //support flag
     BOOL isSupported = NO;
@@ -91,7 +91,7 @@ BOOL isSupportedOS()
     NSDictionary* osVersionInfo = nil;
     
     //get OS version info
-    osVersionInfo = getOSVersion();
+    osVersionInfo = PI_getOSVersion();
     if(nil == osVersionInfo)
     {
         //bail
@@ -121,7 +121,7 @@ bail:
 }
 
 //enumerate all running processes
-NSMutableArray* enumerateProcesses()
+NSMutableArray* PI_enumerateProcesses()
 {
     //status
     int status = -1;
@@ -186,7 +186,7 @@ bail:
 
 //given a path to binary
 // ->parse it back up to find app's bundle
-NSBundle* findAppBundle(NSString* binaryPath)
+NSBundle* PI_findAppBundle(NSString* binaryPath)
 {
     //app's bundle
     NSBundle* appBundle = nil;
@@ -230,7 +230,7 @@ NSBundle* findAppBundle(NSString* binaryPath)
 }
 
 //sha256 a file
-NSString* hashFile(NSString* filePath)
+NSString* PI_hashFile(NSString* filePath)
 {
     //file's contents
     NSData* fileContents = nil;
