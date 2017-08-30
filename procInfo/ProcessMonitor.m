@@ -82,26 +82,21 @@ bail:
     //get OS version info
     osVersionInfo = PI_getOSVersion();
 
-    //for full monitoring, gotta be root and macOS 10.12.4 ('safe', as fixed kernel crash)
-    if( (0 == geteuid()) &&
-        ([osVersionInfo[@"minorVersion"] intValue] >= OS_MINOR_VERSION_SIERRA) &&
-        ([osVersionInfo[@"bugfixVersion"] intValue] >= 4))
+    //do basic (app) monitoring
+    // ->if not root, or OS version is < 10.12.4 (due to kernel bug)
+    if( (0 != getuid()) ||
+        ([osVersionInfo[@"minorVersion"] intValue] < OS_MINOR_VERSION_SIERRA) ||
+        (([osVersionInfo[@"minorVersion"] intValue] == OS_MINOR_VERSION_SIERRA) && ([osVersionInfo[@"bugfixVersion"] intValue] < 4)) )
     {
-        //start process monitoring via openBSM to get apps & procs
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            
-            //monitor
-            [self monitor];
-            
-        });
+        //setup app monitoring
+        [self appMonitor];
     }
     
-    //otherwise, just do app monitoring
-    // ->yes, this will miss commandline utils, but doesn't require root, and won't panic kernel :/
+    //otherwise, enable full monitoring
     else
     {
-        //setup callback for app monitoring
-        [self appMonitor];
+        //monitor
+        [self monitor];
     }
 
     return NO;
