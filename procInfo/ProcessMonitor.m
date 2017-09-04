@@ -95,8 +95,14 @@ bail:
     //otherwise, enable full monitoring
     else
     {
-        //monitor
-        [self monitor];
+        //start process monitoring via openBSM to get apps & procs
+        // ->sits in while(YES) loop, so we invoke call in a background thread
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            
+            //monitor
+            [self monitor];
+            
+        });
     }
 
     return NO;
