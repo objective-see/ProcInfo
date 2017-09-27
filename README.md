@@ -40,7 +40,7 @@ ProcessCallbackBlock block = ^(Process* process)
 
 //start monitoring
 // ->block will be invoke upon process events!
-[processInfo start:block];
+[procInfo start:block];
  ```
 
 
