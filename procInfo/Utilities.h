@@ -18,13 +18,13 @@ NSBundle* PI_findAppBundle(NSString* binaryPath);
 
 //check if current OS version is supported
 // ->for now, just...?
-BOOL PI_isSupportedOS();
+BOOL PI_isSupportedOS(void);
 
 //get OS version
-NSDictionary* PI_getOSVersion();
+NSDictionary* PI_getOSVersion(void);
 
 //enumerate all running processes
-NSMutableArray* PI_enumerateProcesses();
+NSMutableArray* PI_enumerateProcesses(void);
 
 //given a bundle
 // ->find its executable
@@ -32,5 +32,9 @@ NSString* PI_findAppBinary(NSString* appPath);
 
 //sha256 a file
 NSString* PI_hashFile(NSString* filePath);
+
+//given a 'short' path or process name
+// find the full path by scanning $PATH
+NSString* PI_which(NSString* processName);
 
 #endif

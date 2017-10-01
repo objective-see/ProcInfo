@@ -232,6 +232,9 @@ bail:
     // ->read/parse/process audit records
     while(YES)
     {
+        @autoreleasepool
+        {
+            
         //first check termination flag/condition
         if(YES == self.shouldStop)
         {
@@ -373,7 +376,7 @@ bail:
                     }
                     
                     //get effective user id
-                    process.user = tokenStruct.tt.subj32.euid;
+                    process.uid = tokenStruct.tt.subj32.euid;
                     
                     break;
                 }
@@ -517,7 +520,10 @@ bail:
             //subtract lenght of current token
             recordBalance -= tokenStruct.len;
         }
-    }
+            
+        }//autorelease
+    
+    } //while(YES)
     
 bail:
     

@@ -27,7 +27,7 @@ BOOL fromAppStore(NSString* path);
 
 //get GUID (really just computer's MAC address)
 // ->from Apple's 'Get the GUID in OS X' (see: 'Validating Receipts Locally')
-NSData* getGUID();
+NSData* getGUID(void);
 
 //determine if a file is signed by Apple proper
 BOOL isApple(NSString* path);

@@ -27,11 +27,14 @@
     self = [super init];
     if(nil != self)
     {
-        //alloc args
+        //alloc array for args
         arguments = [NSMutableArray array];
         
-        //alloc parents
+        //alloc array for parents
         ancestors  = [NSMutableArray array];
+        
+        //alloc array for args
+        arguments = [NSMutableArray array];
         
         //set start time
         timestamp = [NSDate date];
@@ -43,11 +46,10 @@
         self.ppid = -1;
         
         //init user
-        self.user = -1;
+        self.uid = -1;
         
         //init exit
         self.exit = -1;
-
     }
     
     return self;
@@ -128,8 +130,8 @@ bail:
     if( (noErr == sysctlResult) &&
         (0 != procBufferSize) )
     {
-        //save uuid
-        self.user = processStruct.kp_eproc.e_ucred.cr_uid;
+        //save uid
+        self.uid = processStruct.kp_eproc.e_ucred.cr_uid;
     }
     
     return;
@@ -341,9 +343,6 @@ bail:
     mib[0] = CTL_KERN;
     mib[1] = KERN_ARGMAX;
     
-    //alloc array for args
-    arguments = [NSMutableArray array];
-    
     //set size
     size = sizeof(systemMaxArgs);
     
@@ -493,7 +492,7 @@ bail:
 -(NSString *)description
 {
     //pretty print
-    return [NSString stringWithFormat: @"pid: %d\npath: %@\nuser: %d\nargs: %@\nancestors: %@\nbinary:\n%@", self.pid, self.path, self.user, self.arguments, self.ancestors, self.binary];
+    return [NSString stringWithFormat: @"pid: %d\npath: %@\nuser: %d\nargs: %@\nancestors: %@\nbinary:\n%@", self.pid, self.path, self.uid, self.arguments, self.ancestors, self.binary];
 }
 
 //class method to get parent of arbitrary process

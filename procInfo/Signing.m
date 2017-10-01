@@ -47,6 +47,16 @@ NSDictionary* extractSigningInfo(NSString* path)
     //init signing status
     signingStatus = [NSMutableDictionary dictionary];
     
+    //sanity check
+    if(nil == path)
+    {
+        //set err
+        signingStatus[KEY_SIGNATURE_STATUS] = [NSNumber numberWithInt:errSecCSObjectRequired];
+        
+        //bail
+        goto bail;
+    }
+    
     //create static code
     status = SecStaticCodeCreateWithPath((__bridge CFURLRef)([NSURL fileURLWithPath:path]), kSecCSDefaultFlags, &staticCode);
     
