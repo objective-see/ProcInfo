@@ -172,7 +172,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#move library into top-level lib folder\nmv $CODESIGNING_FOLDER_PATH $SRCROOT/lib/";
+			shellScript = "#move library into top-level lib folder\nmv $CODESIGNING_FOLDER_PATH $SRCROOT/lib/\n\n#copy header file into top-level lib folder\ncp $SRCROOT/procInfo/procInfo.h $SRCROOT/lib/";
 		};
 /* End PBXShellScriptBuildPhase section */
 

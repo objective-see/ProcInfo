@@ -7,8 +7,6 @@
 //  License:    Creative Commons Attribution-NonCommercial 4.0 International License
 //
 
-//TODO: add support for execve?
-
 //disable incomplete/umbrella warnings
 // ->otherwise complains about 'audit_kevents.h'
 #pragma clang diagnostic ignored "-Wincomplete-umbrella"
@@ -32,6 +30,9 @@
 
 /* INSTANCE VARIABLES */
 
+//do signing checks?
+@property BOOL skipSigningInfo;
+
 //callback block
 @property(nonatomic, copy)ProcessCallbackBlock processCallback;
 
@@ -43,14 +44,15 @@
 @implementation ProcInfo
 
 //init
--(id)init
+// just check OS version
+-(id _Nullable )init
 {
     //super
     self = [super init];
     if(self)
     {
         //make sure OS is supported
-        // ->for now, OS X 10.8+ though could be earlier?
+        // for now, OS X 10.8+ though could be earlier?
         if(YES != PI_isSupportedOS())
         {
             //err msg
@@ -69,8 +71,26 @@ bail:
     return self;
 }
 
+//init w/ flag
+// flag dictates if CPU intensive signing checks should be performed
+-(id _Nullable )init:(BOOL)skipSigningInfo;
+{
+    //init
+    // calls 'super' too
+    self = [self init];
+    if(self)
+    {
+        //save mode
+        self.skipSigningInfo = skipSigningInfo;
+    }
+    
+bail:
+    
+    return self;
+}
+
 //start monitoring
-// ->note: requires root/macOS 10.12.4+ for full monitoring
+// note: requires root/macOS 10.12.4+ for full monitoring
 -(BOOL)start:(ProcessCallbackBlock)callback
 {
     //OS version info
@@ -96,7 +116,7 @@ bail:
     else
     {
         //start process monitoring via openBSM to get apps & procs
-        // ->sits in while(YES) loop, so we invoke call in a background thread
+        // sits in while(YES) loop, so we invoke call in a background thread
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             
             //monitor
@@ -112,7 +132,7 @@ bail:
 -(void)stop
 {
     //stop app monitoring
-    // ->can always call, even if we didn't setup app monitor
+    // can always call, even if we didn't setup app monitor
     [[NSNotificationCenter defaultCenter] removeObserver: self];
     
     //set 'stop' monitor bool
@@ -126,7 +146,7 @@ bail:
 -(void)monitor
 {
     //event mask
-    // ->what event classes to watch for
+    // what event classes to watch for
     u_int eventClasses = AUDIT_CLASS_EXEC | AUDIT_CLASS_PROCESS;
     
     //file pointer to audit pipe
@@ -256,7 +276,7 @@ bail:
         }
         
         //read a single audit record
-        // ->note: buffer is allocated by function, so must be freed when done
+        // note: buffer is allocated by function, so must be freed when done
         recordLength = au_read_rec(auditFile, &recordBuffer);
         
         //sanity check
@@ -277,7 +297,7 @@ bail:
         while(0 != recordBalance)
         {
             //extract token
-            // ->and sanity check
+            // and sanity check
             if(-1  == au_fetch_tok(&tokenStruct, recordBuffer + processedLength, recordBalance))
             {
                 //error
@@ -286,7 +306,7 @@ bail:
             }
             
             //ignore records that are not related to process exec'ing/spawning
-            // ->gotta wait till we hit/capture a AUT_HEADER* though, as this has the event type
+            // gotta wait till we hit/capture a AUT_HEADER* though, as this has the event type
             if( (nil != process) &&
                 (YES != [self shouldProcessRecord:process.type]) )
             {
@@ -296,11 +316,11 @@ bail:
             }
             
             //process token(s)
-            // ->create Process object, etc
+            // create Process object, etc
             switch(tokenStruct.id)
             {
                 //handle start of record
-                // ->grab event type, which allows us to ignore events not of interest
+                // grab event type, which allows us to ignore events not of interest
                 case AUT_HEADER32:
                 case AUT_HEADER32_EX:
                 case AUT_HEADER64:
@@ -316,7 +336,7 @@ bail:
                 }
                     
                 //path
-                // ->note: this might be updated/replaced later (if it's '/dev/null', etc)
+                // note: this might be updated/replaced later (if it's '/dev/null', etc)
                 case AUT_PATH:
                 {
                     //save path
@@ -326,19 +346,19 @@ bail:
                 }
                     
                 //subject
-                // ->extract/save pid || ppid
-                //   all these cases can be treated as subj32 cuz only accessing initial members
+                //  extract/save pid || ppid
+                //  all these cases can be treated as subj32 cuz only accessing initial members
                 case AUT_SUBJECT32:
                 case AUT_SUBJECT32_EX:
                 case AUT_SUBJECT64:
                 case AUT_SUBJECT64_EX:
                 {
                     //SPAWN (pid/ppid)
-                    //  ->if there was an AUT_ARG32 (which always come first), that's the pid! so this will be the ppid
+                    // if there was an AUT_ARG32 (which always come first), that's the pid! so this will be the ppid
                     if(AUE_POSIX_SPAWN == process.type)
                     {
                         //no AUT_ARG32?
-                        // ->set as pid, and try manually to get ppid
+                        // set as pid, and try manually to get ppid
                         if(-1 == process.pid)
                         {
                             //set pid
@@ -348,7 +368,7 @@ bail:
                             process.ppid = [Process getParentID:process.pid];
                         }
                         //pid already set (via AUT_ARG32)
-                        // ->this then, is the ppid
+                        // this then, is the ppid
                         else
                         {
                             //set ppid
@@ -357,7 +377,7 @@ bail:
                     }
                     
                     //FORK
-                    // ->ppid (pid is in AUT_ARG32)
+                    // ppid (pid is in AUT_ARG32)
                     else if(AUE_FORK == process.type)
                     {
                         //set ppid
@@ -365,7 +385,7 @@ bail:
                     }
                     
                     //AUE_EXEC/VE & AUE_EXIT
-                    // ->this is the pid
+                    // this is the pid
                     else
                     {
                         //save pid
@@ -382,13 +402,13 @@ bail:
                 }
                     
                 //args
-                // ->SPAWN/FORK this is pid
+                // SPAWN/FORK this is pid
                 case AUT_ARG32:
                 case AUT_ARG64:
                 {
                     //save pid
                     if( (AUE_POSIX_SPAWN == process.type) ||
-                       (AUE_FORK == process.type) )
+                        (AUE_FORK == process.type) )
                     {
                         //32bit
                         if(AUT_ARG32 == tokenStruct.id)
@@ -405,7 +425,7 @@ bail:
                     }
                     
                     //FORK
-                    // ->doesn't have token for path, so try manually find it now
+                    // doesn't have token for path, so try manually find it now
                     if(AUE_FORK == process.type)
                     {
                         //set path
@@ -416,14 +436,14 @@ bail:
                 }
                     
                 //exec args
-                // ->just save into args
+                // just save into args
                 case AUT_EXEC_ARGS:
                 {
                     //save args
                     for(int i = 0; i<tokenStruct.tt.execarg.count; i++)
                     {
                         //try create arg
-                        // ->this sometimes fails, not sure why?
+                        // this sometimes fails, not sure why?
                         argument = [NSString stringWithUTF8String:tokenStruct.tt.execarg.text[i]];
                         if(nil == argument)
                         {
@@ -439,7 +459,7 @@ bail:
                 }
                     
                 //exit
-                // ->save status
+                // save status
                 case AUT_EXIT:
                 {
                     //save
@@ -449,7 +469,7 @@ bail:
                 }
                     
                 //record trailer
-                // ->end/save, etc
+                // end/save, etc
                 case AUT_TRAILER:
                 {
                     //end
@@ -467,20 +487,20 @@ bail:
                         else
                         {
                             //try get process path
-                            // ->this is the most 'trusted way' (since exec_args can change)
+                            // this is the most 'trusted way' (since exec_args can change)
                             [process pathFromPid];
                             
                             //failed to get path at runtime
-                            // ->if 'AUT_PATH' was something like '/dev/null' or '/dev/console' use arg[0]...yes this can be spoofed :/
-                            if( ((nil == process.path) || (YES == [process.path hasPrefix:@"/dev/"])) &&
-                                    (0 != process.arguments.count) )
+                            // if 'AUT_PATH' was something like '/dev/null' or '/dev/console' use arg[0]...yes this can be spoofed :/
+                            if( ((0 == process.path.length) || (YES == [process.path hasPrefix:@"/dev/"])) &&
+                                 (0 != process.arguments.count) )
                             {
                                 //use arg[0]
                                 process.path = process.arguments.firstObject;
                             }
                             
                             //save fork events
-                            // ->this will have ppid that can be used for child events (exec/spawn, etc)
+                            // this will have ppid that can be used for child events (exec/spawn, etc)
                             if(AUE_FORK == process.type)
                             {
                                 //save
@@ -488,7 +508,7 @@ bail:
                             }
                             
                             //when we don't have a ppid
-                            // ->see if there was a 'matching' fork() that has it (only for non AUE_FORK events)
+                            // see if there was a 'matching' fork() that has it (only for non AUE_FORK events)
                             else if( (-1 == process.ppid)  &&
                                      (lastFork.pid == process.pid) )
                             {
@@ -551,7 +571,7 @@ bail:
 }
 
 //check if event is one we care about
-// ->for now, just anything associated with new processes/exits
+// for now, just anything associated with new processes/exits
 -(BOOL)shouldProcessRecord:(u_int16_t)eventType
 {
     //flag
@@ -570,8 +590,6 @@ bail:
     
     return shouldProcess;
 }
-
-//TODO: also app exits
 
 //register for app launchings
 -(void)appMonitor
@@ -592,7 +610,7 @@ bail:
 }
 
 //automatically invoked when an app is started/exits
-// ->create new process object and add to dictionary
+// create new process object and add to dictionary
 -(void)appEvent:(NSNotification *)notification
 {
     //process object
@@ -645,11 +663,11 @@ bail:
 
 
 //handle new process
-// ->create Binary obj/enum/process ancestors, etc
+// create Binary obj/enum/process ancestors, etc
 -(void)handleProcessStart:(Process*)process
 {
     //sanity check
-    // ->should only occur for fork() events, which normal get superceeded by an exec(), etc
+    // should only occur for fork() events, which normally get superceeded by an exec(), etc
     if( (-1 == process.pid) ||
         (nil == process.path) )
     {
@@ -682,6 +700,13 @@ bail:
         goto bail;
     }
     
+    //automatically generate signing info?
+    if(YES != self.skipSigningInfo)
+    {
+        //generate signing info
+        [process.binary generateSigningInfo];
+    }
+    
     //invoke user callback
     self.processCallback(process);
 
@@ -691,7 +716,7 @@ bail:
 }
 
 //handle process exit event
-// ->as only have pid, just alert user
+// as only have pid, just alert user
 -(void)handleProcessExit:(Process*)process
 {
     //invoke user callback
@@ -713,7 +738,7 @@ bail:
     processes = [NSMutableArray array];
     
     //iterate over all pids
-    // ->init process object w/ pid/path, etc
+    // init process object w/ pid/path, etc
     for(NSNumber* pid in PI_enumerateProcesses())
     {
         //skip 'blank' pids

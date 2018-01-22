@@ -56,7 +56,7 @@
 }
 
 //init with a pid
-// ->method will then (try) fill out rest of object
+// method will then (try) fill out rest of object
 -(id)init:(pid_t)processID
 {
     //init self/super
@@ -71,7 +71,7 @@
         
         //get path
         [self pathFromPid];
-        if(nil == self.path)
+        if(0 == self.path.length)
         {
             //err msg
             NSLog(@"ERROR: failed to find path for process %d\n", self.pid);
@@ -213,17 +213,18 @@ bail:
     
     //first attempt to get path via 'proc_pidpath()'
     status = proc_pidpath(self.pid, pathBuffer, sizeof(pathBuffer));
-    if(0 != status)
+    if( (0 != status) &&
+        (0 != strlen(pathBuffer)) )
     {
         //init path
         self.path = [NSString stringWithUTF8String:pathBuffer];
     }
     //otherwise
-    // ->try via process's args ('KERN_PROCARGS2')
+    // try via process's args ('KERN_PROCARGS2')
     else
     {
         //init mib
-        // ->want system's size for max args
+        // want system's size for max args
         mib[0] = CTL_KERN;
         mib[1] = KERN_ARGMAX;
         
@@ -238,7 +239,7 @@ bail:
         }
         
         //alloc space for args
-        processArgs = malloc(systemMaxArgs);
+        processArgs = calloc(systemMaxArgs, sizeof(char));
         if(NULL == processArgs)
         {
             //bail
@@ -246,7 +247,7 @@ bail:
         }
         
         //init mib
-        // ->want process args
+        // want process args
         mib[0] = CTL_KERN;
         mib[1] = KERN_PROCARGS2;
         mib[2] = pid;
@@ -262,7 +263,7 @@ bail:
         }
         
         //sanity check
-        // ->ensure buffer is somewhat sane
+        // ensure buffer is somewhat sane
         if(size <= sizeof(int))
         {
             //bail
@@ -270,7 +271,7 @@ bail:
         }
         
         //extract process name
-        // ->follows # of args (int) and is NULL-terminated
+        // follows # of args (int) and is NULL-terminated
         self.path = [NSString stringWithUTF8String:processArgs + sizeof(int)];
     }
     

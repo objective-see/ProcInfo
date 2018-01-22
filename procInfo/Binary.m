@@ -62,9 +62,6 @@
         
         //get attributes
         [self getAttributes];
-        
-        //generate signing info
-        [self generateSigningInfo];
     }
 
     return self;
@@ -175,11 +172,6 @@
     if( (nil == self.bundle) ||
         (nil == self.icon) )
     {
-        //dbg msg
-        #ifdef DEBUG
-        logMsg(LOG_DEBUG, [NSString stringWithFormat:@"getting icon for shared workspace: %@", self.path]);
-        #endif
-        
         //extract icon
         self.icon = [[NSWorkspace sharedWorkspace] iconForFile:self.path];
         
@@ -209,7 +201,6 @@ bail:
     
     return;
 }
-
 
 //generate signing info
 // also classifies if Apple/from App Store/etc.
