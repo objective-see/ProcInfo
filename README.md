@@ -19,7 +19,9 @@ To use the Proc Info library:
 #import "procInfo.h"
 
 //init proc info object
-ProcInfo* procInfo = [[ProcInfo alloc] init];
+// YES: skip (CPU-intensive) generation of code-signing info
+// NO:  automatically generate code-signing info for each process
+ProcInfo* procInfo = [[ProcInfo alloc] init:NO];
 
 //dump process info for process 1337
 NSLog(@"process: %@", [[Process alloc] init:1337]);
