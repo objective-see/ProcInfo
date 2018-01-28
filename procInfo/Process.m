@@ -67,7 +67,7 @@
         self.pid = processID;
         
         //set parent
-        self.ppid = getppid();
+        self.ppid = [[self class] getParentID:self.pid];
         
         //get path
         [self pathFromPid];
