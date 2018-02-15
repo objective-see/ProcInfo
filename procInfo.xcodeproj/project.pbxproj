@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		7D6E87771F3BD0FA00D6BD7C /* libprocInfo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7D6E87761F3BD0FA00D6BD7C /* libprocInfo.a */; };
 		7DD0A92D1F35A04B000EA15D /* ProcessMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DD0A91F1F35A04B000EA15D /* ProcessMonitor.m */; };
 		7DD0A92F1F35A04B000EA15D /* Binary.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DD0A9211F35A04B000EA15D /* Binary.m */; };
 		7DD0A9301F35A04B000EA15D /* Process.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DD0A9221F35A04B000EA15D /* Process.m */; };
@@ -41,7 +40,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7D6E87771F3BD0FA00D6BD7C /* libprocInfo.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
