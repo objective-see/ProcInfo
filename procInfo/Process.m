@@ -102,7 +102,7 @@ bail:
 }
 
 //get uid
-// ->sets 'user' instance var
+// sets 'user' instance var
 -(void)getUser
 {
     //kinfo_proc struct
@@ -156,7 +156,7 @@ bail:
         currentPID = self.ppid;
     }
     //don't know parent
-    // ->just start with self
+    // just start with self
     else
     {
         //start w/ self
@@ -164,7 +164,7 @@ bail:
     }
     
     //add until we get to to end (pid 0)
-    // ->or error out during the traversal
+    // or error out during the traversal
     while(YES)
     {
         //get parent pid
@@ -300,7 +300,7 @@ bail:
     int signalStatus = -1;
     
     //send kill with 0 to determine if alive
-    // -> see: http://stackoverflow.com/questions/9152979/check-if-process-exists-given-its-pid
+    // see: http://stackoverflow.com/questions/9152979/check-if-process-exists-given-its-pid
     signalStatus = kill(self.pid, 0);
     
     //is alive?
@@ -315,7 +315,7 @@ bail:
 }
 
 //extract commandline args
-//  ->saves into 'arguments' ivar
+// saves into 'arguments' ivar
 -(void)getArgs
 {
     //'management info base' array
@@ -340,7 +340,7 @@ bail:
     char* parser = NULL;
     
     //init mib
-    // ->want system's size for max args
+    // want system's size for max args
     mib[0] = CTL_KERN;
     mib[1] = KERN_ARGMAX;
     
@@ -363,7 +363,7 @@ bail:
     }
     
     //init mib
-    // ->want process args
+    // want process args
     mib[0] = CTL_KERN;
     mib[1] = KERN_PROCARGS2;
     mib[2] = pid;
@@ -379,7 +379,7 @@ bail:
     }
     
     //sanity check
-    // ->ensure buffer is somewhat sane
+    // ensure buffer is somewhat sane
     if(size <= sizeof(int))
     {
         //bail
@@ -387,12 +387,11 @@ bail:
     }
     
     //extract number of args
-    // ->at start of buffer
+    // at start of buffer
     memcpy(&numberOfArgs, processArgs, sizeof(numberOfArgs));
     
-
     //init pointer to start of args
-    // ->they start right after # of args
+    // they start right after # of args
     parser = processArgs + sizeof(numberOfArgs);
     
     //scan until end of process's NULL-terminated path
@@ -410,7 +409,7 @@ bail:
     }
     
     //sanity check
-    // ->make sure end-of-buffer wasn't reached
+    // make sure end-of-buffer wasn't reached
     if(parser == &processArgs[size])
     {
         //bail
@@ -418,7 +417,7 @@ bail:
     }
     
     //skip all trailing NULLs
-    // ->scan will end when non-NULL is found
+    // scan will end when non-NULL is found
     while(parser < &processArgs[size])
     {
         //scan till NULL-terminator
@@ -433,7 +432,7 @@ bail:
     }
     
     //sanity check
-    // ->(again), make sure end-of-buffer wasn't reached
+    // (again), make sure end-of-buffer wasn't reached
     if(parser == &processArgs[size])
     {
         //bail
@@ -441,15 +440,15 @@ bail:
     }
     
     //parser should now point to argv[0], process name
-    // ->init arg start
+    // init arg start
     argStart = parser;
     
     //keep scanning until all args are found
-    // ->each is NULL-terminated
+    // each is NULL-terminated
     while(parser < &processArgs[size])
     {
         //each arg is NULL-terminated
-        // ->so scan till NULL, then save into array
+        // so scan till NULL, then save into array
         if(*parser == '\0')
         {
             //save arg

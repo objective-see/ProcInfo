@@ -13,7 +13,7 @@
 #import "AppReceipt.h"
 
 //helper function from [1]
-// ->extract an int from ASN.1 data
+// extract an int from ASN.1 data
 inline static int getIntValueFromASN1Data(const ASN1_Data *asn1Data)
 {
     int ret = 0;
@@ -25,7 +25,7 @@ inline static int getIntValueFromASN1Data(const ASN1_Data *asn1Data)
 }
 
 //helper function from [1]
-// ->decode string from ASN.1 data
+// decode string from ASN.1 data
 inline static NSString *decodeUTF8StringFromASN1Data(SecAsn1CoderRef decoder, ASN1_Data srcData)
 {
     //data struct
@@ -61,7 +61,7 @@ bail:
 @synthesize decodedData;
 
 //init with app path
-// ->locate/load/decode receipt, etc
+// locate/load/decode receipt, etc
 -(instancetype)init:(NSBundle *)bundle
 {
     //init
@@ -101,7 +101,7 @@ bail:
         }
         
         //parse out values
-        // ->bundle id, app version, etc
+        // bundle id, app version, etc
         self.components = [self parse];
         if( (nil == self.components) ||
             (0 == self.components.count) )
@@ -120,7 +120,7 @@ bail:
 }
 
 //decode receipt data
-// ->some validations performed here too
+// some validations performed here too
 -(NSData*)decode
 {
     //decoded data
@@ -183,7 +183,7 @@ bail:
     }
 
     //CHECK 1:
-    // ->make sure there is a signer
+    // make sure there is a signer
     status = CMSDecoderGetNumSigners(decoder, &signers);
     if( (noErr != status) ||
         (0 == signers) )
@@ -193,7 +193,7 @@ bail:
     }
 
     //CHECK 2:
-    // ->make sure signer status is ok
+    // make sure signer status is ok
     status = CMSDecoderCopySignerStatus(decoder, 0, policy, TRUE, &signerStatus, &trust, &certVerifyResult);
     if( (noErr != status) ||
         (kCMSSignerValid != signerStatus) )
@@ -259,7 +259,7 @@ bail:
 }
 
 //parse decoded receipt
-// ->extract out items such as bundle id, app version, etc.
+// extract out items such as bundle id, app version, etc.
 -(NSMutableDictionary*)parse
 {
     //decoder
@@ -297,14 +297,14 @@ bail:
     items = [NSMutableDictionary dictionary];
     
     //extact attributes
-    // ->save those of interest
+    // save those of interest
     for(int i = 0; (attribute = payload.attrs[i]); i++)
     {
         //process each type
         switch(getIntValueFromASN1Data(&attribute->type))
         {
             //bundle id
-            // ->save bundle id and data
+            // save bundle id and data
             case RECEIPT_ATTR_BUNDLE_ID:
             {
                 //save bundle id
@@ -345,7 +345,7 @@ bail:
             }
                 
             //default
-            // ->ignore
+            // ignore
             default:
             {
                 break;

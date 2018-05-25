@@ -98,7 +98,7 @@ static const SecAsn1Template kSetOfReceiptAttributeTemplate[] =
 /* METHODS */
 
 //init with app path
-// ->locate/load receipt, etc
+// locate/load receipt, etc
 -(instancetype)init:(NSBundle *)bundle;
 
 /* PROPERTIES */

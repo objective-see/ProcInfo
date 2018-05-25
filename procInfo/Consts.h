@@ -28,22 +28,19 @@
 //audit class for exec events
 #define AUDIT_CLASS_EXEC 0x40000000
 
-//signature status
-#define KEY_SIGNATURE_STATUS @"signatureStatus"
+//key for stdout output
+#define STDOUT @"stdOutput"
 
-//signing auths
-#define KEY_SIGNING_AUTHORITIES @"signingAuthorities"
-
-//file belongs to apple?
-#define KEY_SIGNING_IS_APPLE @"signedByApple"
-
-//file signed with apple dev id
-#define KEY_SIGNING_IS_APPLE_DEV_ID @"signedWithDevID"
-
-//from app store
-#define KEY_SIGNING_IS_APP_STORE @"fromAppStore"
+//key for stderr output
+#define STDERR @"stdError"
 
 //key for exit code
 #define EXIT_CODE @"exitCode"
+
+//path to codesign
+#define CODE_SIGN @"/usr/bin/codesign"
+
+//entitlements
+#define KEY_SIGNING_ENTITLEMENTS @"entitlements"
 
 #endif /* Consts_h */

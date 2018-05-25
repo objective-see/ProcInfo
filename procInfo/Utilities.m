@@ -15,7 +15,7 @@
 #import <sys/sysctl.h>
 
 //disable deprecated warnings
-// ->use 'Gestalt' as this code may run on old OS X vers.
+// use 'Gestalt' as this code may run on old OS X vers.
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
 //get OS version
@@ -81,7 +81,7 @@ bail:
 }
 
 //is current OS version supported?
-// ->for now, just OS X 10.8+
+// for now, just OS X 10.8+
 BOOL PI_isSupportedOS()
 {
     //support flag
@@ -158,7 +158,7 @@ NSMutableArray* PI_enumerateProcesses()
     }
     
     //iterate over all pids
-    // ->save pid into return array
+    // save pid into return array
     for(int i = 0; i < numberOfProcesses; ++i)
     {
         //save each pid
@@ -185,7 +185,7 @@ bail:
 }
 
 //given a path to binary
-// ->parse it back up to find app's bundle
+// parse it back up to find app's bundle
 NSBundle* PI_findAppBundle(NSString* binaryPath)
 {
     //app's bundle
@@ -204,24 +204,24 @@ NSBundle* PI_findAppBundle(NSString* binaryPath)
         appBundle = [NSBundle bundleWithPath:appPath];
         
         //check for match
-        // ->binary path's match
+        // binary path's match
         if( (nil != appBundle) &&
-           (YES == [appBundle.executablePath isEqualToString:binaryPath]))
+            (YES == [appBundle.executablePath isEqualToString:binaryPath]))
         {
             //all done
             break;
         }
         
         //always unset bundle var since it's being returned
-        // ->and at this point, its not a match
+        // and at this point, its not a match
         appBundle = nil;
         
         //remove last part
-        // ->will try this next
+        // will try this next
         appPath = [appPath stringByDeletingLastPathComponent];
         
     //scan until we get to root
-    // ->of course, loop will be exited if app info dictionary is found/loaded
+    // of course, loop will be exited if app info dictionary is found/loaded
     } while( (nil != appPath) &&
              (YES != [appPath isEqualToString:@"/"]) &&
              (YES != [appPath isEqualToString:@""]) );
@@ -229,7 +229,8 @@ NSBundle* PI_findAppBundle(NSString* binaryPath)
     return appBundle;
 }
 
-//sha256 a file
+//hash a file
+// algorithm: sha256
 NSString* PI_hashFile(NSString* filePath)
 {
     //file's contents
@@ -258,7 +259,7 @@ NSString* PI_hashFile(NSString* filePath)
     CC_SHA256(fileContents.bytes, (unsigned int)fileContents.length, digestSHA256);
     
     //convert to NSString
-    // ->iterate over each bytes in computed digest and format
+    // iterate over each bytes in computed digest and format
     for(index=0; index < CC_SHA256_DIGEST_LENGTH; index++)
     {
         //format/append
@@ -293,11 +294,11 @@ NSString* PI_which(NSString* processName)
     pathComponents = [path componentsSeparatedByString:@":"];
     
     //iterate over all path components
-    // ->build candidate path and check if it exists
+    // build candidate path and check if it exists
     for(NSString* pathComponent in pathComponents)
     {
         //build candidate path
-        // ->current path component + process name
+        // current path component + process name
         candidateBinary = [pathComponent stringByAppendingPathComponent:processName];
         
         //check if it exists
@@ -317,4 +318,155 @@ NSString* PI_which(NSString* processName)
     }//for path components
     
     return fullPath;
+}
+
+//exec a process with args
+NSMutableDictionary* PI_execTask(NSString* binaryPath, NSArray* arguments, BOOL shouldWait, BOOL grabOutput)
+{
+    //task
+    NSTask* task = nil;
+    
+    //output pipe for stdout
+    NSPipe* stdOutPipe = nil;
+    
+    //output pipe for stderr
+    NSPipe* stdErrPipe = nil;
+    
+    //read handle for stdout
+    NSFileHandle* stdOutReadHandle = nil;
+    
+    //read handle for stderr
+    NSFileHandle* stdErrReadHandle = nil;
+    
+    //results dictionary
+    NSMutableDictionary* results = nil;
+    
+    //output for stdout
+    NSMutableData *stdOutData = nil;
+    
+    //output for stderr
+    NSMutableData *stdErrData = nil;
+    
+    //init dictionary for results
+    results = [NSMutableDictionary dictionary];
+    
+    //init task
+    task = [[NSTask alloc] init];
+    
+    //only setup pipes if wait flag is set
+    if(YES == grabOutput)
+    {
+        //init stdout pipe
+        stdOutPipe = [NSPipe pipe];
+        
+        //init stderr pipe
+        stdErrPipe = [NSPipe pipe];
+        
+        //init stdout read handle
+        stdOutReadHandle = [stdOutPipe fileHandleForReading];
+        
+        //init stderr read handle
+        stdErrReadHandle = [stdErrPipe fileHandleForReading];
+        
+        //init stdout output buffer
+        stdOutData = [NSMutableData data];
+        
+        //init stderr output buffer
+        stdErrData = [NSMutableData data];
+        
+        //set task's stdout
+        task.standardOutput = stdOutPipe;
+        
+        //set task's stderr
+        task.standardError = stdErrPipe;
+    }
+    
+    //set task's path
+    task.launchPath = binaryPath;
+    
+    //set task's args
+    if(nil != arguments)
+    {
+        //set
+        task.arguments = arguments;
+    }
+    
+    //wrap task launch
+    @try
+    {
+        //launch
+        [task launch];
+    }
+    @catch(NSException *exception)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //no need to wait
+    // can just bail w/ no output
+    if( (YES != shouldWait) &&
+        (YES != grabOutput) )
+    {
+        //bail
+        goto bail;
+    }
+    
+    
+    //wait
+    // ...but no output
+    else if( (YES == shouldWait) &&
+            (YES != grabOutput) )
+    {
+        //wait
+        [task waitUntilExit];
+        
+        //add exit code
+        results[EXIT_CODE] = [NSNumber numberWithInteger:task.terminationStatus];
+        
+        //bail
+        goto bail;
+    }
+    
+    //grab output?
+    // even if wait not set, still will wait!
+    else
+    {
+        //read in stdout/stderr
+        while(YES == [task isRunning])
+        {
+            //accumulate stdout
+            [stdOutData appendData:[stdOutReadHandle readDataToEndOfFile]];
+            
+            //accumulate stderr
+            [stdErrData appendData:[stdErrReadHandle readDataToEndOfFile]];
+        }
+        
+        //grab any leftover stdout
+        [stdOutData appendData:[stdOutReadHandle readDataToEndOfFile]];
+        
+        //grab any leftover stderr
+        [stdErrData appendData:[stdErrReadHandle readDataToEndOfFile]];
+        
+        //add stdout
+        if(0 != stdOutData.length)
+        {
+            //add
+            results[STDOUT] = stdOutData;
+        }
+        
+        //add stderr
+        if(0 != stdErrData.length)
+        {
+            //add
+            results[STDERR] = stdErrData;
+        }
+        
+        //add exit code
+        results[EXIT_CODE] = [NSNumber numberWithInteger:task.terminationStatus];
+    }
+    
+bail:
+    
+    return results;
 }

@@ -19,12 +19,15 @@
 @synthesize path;
 @synthesize bundle;
 @synthesize isApple;
+@synthesize metadata;
 @synthesize attributes;
+@synthesize identifier;
 @synthesize isAppStore;
 @synthesize signingInfo;
+@synthesize entitlements;
 
 //init binary object
-// generates signing info, classifies binary, etc
+// note: CPU-intensive logic (code signing, etc) called manually
 -(id)init:(NSString*)binaryPath
 {
     //init super
@@ -57,11 +60,11 @@
         //get name
         [self getName];
         
-        //get icon
-        [self getIcon];
-        
-        //get attributes
+        //get file attributes
         [self getAttributes];
+        
+        //get meta data (spotlight)
+        [self getMetadata];
     }
 
     return self;
@@ -89,17 +92,17 @@
 // either via app bundle, or from path
 -(void)getName
 {
-    //found app bundle?
-    // grab name from 'CFBundleName'
+    //first try get name from app bundle
+    // specifically, via grab name from 'CFBundleName'
     if(nil != self.bundle)
     {
         //extract name
         self.name = [self.bundle infoDictionary][@"CFBundleName"];
     }
     
-    //no app bundle
+    //no app bundle || no 'CFBundleName'
     // just use last component from path
-    else
+    if(nil == self.name)
     {
         //set name
         self.name = [self.path lastPathComponent];
@@ -108,12 +111,59 @@
     return;
 }
 
-//get attributes
+//get file attributes
 -(void)getAttributes
 {
     //grab (file) attributes
     self.attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:self.path error:nil];
     
+    return;
+}
+
+//get (spotlight) meta data
+-(void)getMetadata
+{
+    //md item ref
+    MDItemRef mdItem = nil;
+    
+    //attributes names
+    CFArrayRef attributeNames = nil;
+
+    //create
+    mdItem = MDItemCreate(kCFAllocatorDefault, (CFStringRef)self.path);
+    if(nil == mdItem)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //copy names
+    attributeNames = MDItemCopyAttributeNames(mdItem);
+    if(nil == attributeNames)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //get metadata
+    self.metadata = CFBridgingRelease(MDItemCopyAttributes(mdItem, attributeNames));
+    
+bail:
+    
+    //release names
+    if(nil != attributeNames)
+    {
+        //release
+        CFRelease(attributeNames);
+    }
+    
+    //release item
+    if(nil != mdItem)
+    {
+        //release
+        CFRelease(mdItem);
+    }
+
     return;
 }
 
@@ -153,7 +203,7 @@
         iconExtension = [iconFile pathExtension];
         
         //if its blank (i.e. not specified)
-        // ->go with 'icns'
+        // go with 'icns'
         if(YES == [iconExtension isEqualTo:@""])
         {
             //set type
@@ -176,7 +226,7 @@
         self.icon = [[NSWorkspace sharedWorkspace] iconForFile:self.path];
         
         //load system document icon
-        // ->static var, so only load once
+        // static var, so only load once
         if(nil == documentIcon)
         {
             //load
@@ -204,11 +254,11 @@ bail:
 
 //generate signing info
 // also classifies if Apple/from App Store/etc.
--(void)generateSigningInfo
+-(void)generateSigningInfo:(SecCSFlags)flags entitlements:(BOOL)entitlements
 {
     //extract signing info (do this first!)
     // from Apple, App Store, signing authorities, etc
-    self.signingInfo = extractSigningInfo(self.path);
+    self.signingInfo = extractSigningInfo(self.path, flags, entitlements);
     
     //perform more signing checks and lists
     // gotta be happily signed for checks though
@@ -225,6 +275,57 @@ bail:
             self.isAppStore = [self.signingInfo[KEY_SIGNING_IS_APP_STORE] boolValue];
         }
     }
+    
+    return;
+}
+
+//generate hash
+-(void)generateHash
+{
+    //hash
+    self.sha256 = PI_hashFile(self.path);
+    
+    return;
+}
+
+//generate id
+// either signing id, or sha256 hash
+// note: will generate signing info if needed
+-(void)generateIdentifier
+{
+    //generate signing info?
+    if(nil == self.signingInfo)
+    {
+        //generate
+        [self generateSigningInfo:kSecCSDefaultFlags entitlements:NO];
+    }
+    
+    //validly signed binary?
+    // use its signing identifier
+    if( (noErr == [self.signingInfo[KEY_SIGNATURE_STATUS] intValue]) &&
+        (0 != [self.signingInfo[KEY_SIGNING_AUTHORITIES] count]) &&
+        (nil != self.signingInfo[KEY_SIGNATURE_IDENTIFIER]) )
+    {
+        //use signing id
+        self.identifier  = self.signingInfo[KEY_SIGNATURE_IDENTIFIER];
+    }
+    //not validly signed or unsigned
+    // generate sha256 hash for identifier
+    else
+    {
+        //hash
+        self.identifier = PI_hashFile(self.path);
+    }
+    
+    return;
+}
+
+//generate entitlements
+// note: can also call 'generateSigningInfo' w/ 'entitlements:YES'
+-(void)generateEntitlements
+{
+    //call into helper function
+    self.entitlements = extractEntitlements(self.path);
     
     return;
 }

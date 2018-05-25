@@ -8,7 +8,7 @@
 //
 
 //disable incomplete/umbrella warnings
-// ->otherwise complains about 'audit_kevents.h'
+// otherwise complains about 'audit_kevents.h'
 #pragma clang diagnostic ignored "-Wincomplete-umbrella"
 
 #import "Consts.h"
@@ -30,8 +30,8 @@
 
 /* INSTANCE VARIABLES */
 
-//do signing checks?
-@property BOOL skipSigningInfo;
+//skip CPU-intensive logic
+@property BOOL goEasy;
 
 //callback block
 @property(nonatomic, copy)ProcessCallbackBlock processCallback;
@@ -72,8 +72,8 @@ bail:
 }
 
 //init w/ flag
-// flag dictates if CPU intensive signing checks should be performed
--(id _Nullable )init:(BOOL)skipSigningInfo;
+// flag dictates if CPU-intensive logic (code signing, etc) should be preformed
+-(id _Nullable )init:(BOOL)goEasy;
 {
     //init
     // calls 'super' too
@@ -81,7 +81,7 @@ bail:
     if(self)
     {
         //save mode
-        self.skipSigningInfo = skipSigningInfo;
+        self.goEasy = goEasy;
     }
     
 bail:
@@ -91,7 +91,7 @@ bail:
 
 //start monitoring
 // note: requires root/macOS 10.12.4+ for full monitoring
--(BOOL)start:(ProcessCallbackBlock)callback
+-(void)start:(ProcessCallbackBlock)callback
 {
     //OS version info
     NSDictionary* osVersionInfo = nil;
@@ -103,7 +103,7 @@ bail:
     osVersionInfo = PI_getOSVersion();
 
     //do basic (app) monitoring
-    // ->if not root, or OS version is < 10.12.4 (due to kernel bug)
+    // if not root, or OS version is < 10.12.4 (due to kernel bug)
     if( (0 != getuid()) ||
         ([osVersionInfo[@"minorVersion"] intValue] < OS_MINOR_VERSION_SIERRA) ||
         (([osVersionInfo[@"minorVersion"] intValue] == OS_MINOR_VERSION_SIERRA) && ([osVersionInfo[@"bugfixVersion"] intValue] < 4)) )
@@ -125,7 +125,7 @@ bail:
         });
     }
 
-    return NO;
+    return;
 }
 
 //stop monitoring
@@ -136,7 +136,7 @@ bail:
     [[NSNotificationCenter defaultCenter] removeObserver: self];
     
     //set 'stop' monitor bool
-    // ->is checked in 'monitor' method as termination condition
+    // is checked in 'monitor' method as termination condition
     self.shouldStop = YES;
     
     return;
@@ -231,7 +231,7 @@ bail:
     }
     
     //set preselect flags
-    // ->event classes we're interested in
+    // event classes we're interested in
     status = ioctl(auditFileDescriptor, AUDITPIPE_SET_PRESELECT_FLAGS, &eventClasses);
     if(-1 == status)
     {
@@ -240,7 +240,7 @@ bail:
     }
     
     //set non-attributable flags
-    // ->event classes we're interested in
+    // event classes we're interested in
     status = ioctl(auditFileDescriptor, AUDITPIPE_SET_PRESELECT_NAFLAGS, &eventClasses);
     if(-1 == status)
     {
@@ -249,7 +249,7 @@ bail:
     }
     
     //forever
-    // ->read/parse/process audit records
+    // read/parse/process audit records
     while(YES)
     {
         @autoreleasepool
@@ -293,7 +293,7 @@ bail:
         processedLength = 0;
         
         //parse record
-        // ->read all tokens/process
+        // read all tokens/process
         while(0 != recordBalance)
         {
             //extract token
@@ -301,7 +301,7 @@ bail:
             if(-1  == au_fetch_tok(&tokenStruct, recordBuffer + processedLength, recordBalance))
             {
                 //error
-                // ->skip record
+                // skip record
                 break;
             }
             
@@ -311,7 +311,7 @@ bail:
                 (YES != [self shouldProcessRecord:process.type]) )
             {
                 //bail
-                // ->skips rest of record
+                // skips rest of record
                 break;
             }
             
@@ -700,11 +700,15 @@ bail:
         goto bail;
     }
     
-    //automatically generate signing info?
-    if(YES != self.skipSigningInfo)
+    //automatically generate signing info/icon?
+    // these can be skipped for performance reasons
+    if(YES != self.goEasy)
     {
         //generate signing info
-        [process.binary generateSigningInfo];
+        [process.binary generateSigningInfo:kSecCSDefaultFlags entitlements:NO];
+    
+        //set icon
+        [process.binary getIcon];
     }
     
     //invoke user callback
@@ -755,6 +759,9 @@ bail:
             //skip
             continue;
         }
+        
+        //generate signing info
+        [currentProcess.binary generateSigningInfo:kSecCSDefaultFlags entitlements:NO];
         
         //add
         [processes addObject:currentProcess];
