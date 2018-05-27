@@ -273,23 +273,42 @@ signing info: {
 It should be noted that if the Proc Info library is not running with root privileges, or is executed on an older version of macOS (pre 10.12.4) it will only monitor for application events (i.e. not terminal nor background processes). This is because in order to safely monitor for audit events, root and recent version of macOS is required.
 
 **Mahalo:**<br>
-This library is supported by the following patrons!
+**Mahalo!**<br>
+This product is supported by the following patrons:
 + Lance Gaines
-+ Khalil Sehnaoui
++ Ash Morgan
+
 + Nando Mendonca
-+ Bill Smartt
-+ Martin OConnell
-+ David Sulpy
-+ Shain Singh
-+ Chad Collins
-+ Harry Hoffman
-+ Keelian Wardle
-+ Christopher Giffard
-+ Conrad Rushing
-+ soreq
-+ Stuart Ashenbrenner
-+ trifero
-+ Peter Sinclair
++ Khalil Sehnaoui
++ Jeff Golden
++ Geoffrey Weber
+
 + Ming
++ Peter Sinclair
++ trifero
++ Keelian Wardle
++ Chad Collins
++ Shain Singh
++ David Sulpy
++ Martin OConnell
++ Bill Smartt
++ Mike Windham
++ Brent Joyce
++ Russell Imrie
++ Michael Thomas
++ Andy One
++ Edmund Harriss
++ Brad Knowles
++ Tom Smith
++ Chuck Talk
++ Derivative Fool
++ Joaquim Espinhara
++ Rudolf Coetzee
++ Chris Ferebee
++ Les Aker
++ Allen Hancock
++ Stuart Ashenbrenner
+
++ Gamer_Bot
 
 Want to add your support? Check out my [patreon page](https://www.patreon.com/objective_see) :)
