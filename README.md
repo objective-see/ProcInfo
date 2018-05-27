@@ -272,7 +272,6 @@ signing info: {
 ```
 It should be noted that if the Proc Info library is not running with root privileges, or is executed on an older version of macOS (pre 10.12.4) it will only monitor for application events (i.e. not terminal nor background processes). This is because in order to safely monitor for audit events, root and recent version of macOS is required.
 
-**Mahalo:**<br>
 **Mahalo!**<br>
 This product is supported by the following patrons:
 + Lance Gaines
