@@ -540,7 +540,6 @@ NSData* getGUID()
               //release
               CFRelease(registryProperty);
           }
-          
 bail:
       ;
           

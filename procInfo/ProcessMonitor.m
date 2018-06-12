@@ -679,7 +679,7 @@ bail:
     if(-1 == process.ppid)
     {
         //get ppid
-        process.ppid =  [Process getParentID:process.pid];
+        process.ppid = [Process getParentID:process.pid];
     }
     
     //enumerate process ancestry
@@ -705,7 +705,7 @@ bail:
     if(YES != self.goEasy)
     {
         //generate signing info
-        [process.binary generateSigningInfo:kSecCSDefaultFlags entitlements:NO];
+        [process.binary generateSigningInfo:kSecCSCheckAllArchitectures entitlements:NO];
     
         //set icon
         [process.binary getIcon];
@@ -761,7 +761,7 @@ bail:
         }
         
         //generate signing info
-        [currentProcess.binary generateSigningInfo:kSecCSDefaultFlags entitlements:NO];
+        [currentProcess.binary generateSigningInfo:kSecCSCheckAllArchitectures entitlements:NO];
         
         //add
         [processes addObject:currentProcess];
