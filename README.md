@@ -274,7 +274,7 @@ It should be noted that if the Proc Info library is not running with root privil
 
 **Mahalo!**<br>
 This product is supported by the following patrons:
-+ Lance Gaines
++ Halo Privacy 
 + Ash Morgan
 
 + Nando Mendonca
