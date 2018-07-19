@@ -12,19 +12,16 @@
 #import "procInfo.h"
 #import "Utilities.h"
 
+#import <CommonCrypto/CommonDigest.h>
+
 @implementation Binary
 
 @synthesize icon;
 @synthesize name;
 @synthesize path;
 @synthesize bundle;
-@synthesize isApple;
 @synthesize metadata;
 @synthesize attributes;
-@synthesize identifier;
-@synthesize isAppStore;
-@synthesize signingInfo;
-@synthesize entitlements;
 
 //init binary object
 // note: CPU-intensive logic (code signing, etc) called manually
@@ -151,17 +148,24 @@
 bail:
     
     //release names
-    if(nil != attributeNames)
+    if(NULL != attributeNames)
     {
         //release
         CFRelease(attributeNames);
+        
+        //unset
+        attributeNames = NULL;
+        
     }
     
-    //release item
-    if(nil != mdItem)
+    //release md item
+    if(NULL != mdItem)
     {
         //release
         CFRelease(mdItem);
+        
+        //unset
+        mdItem = NULL;
     }
 
     return;
@@ -179,9 +183,6 @@ bail:
     
     //icon's path extension
     NSString* iconExtension = nil;
-    
-    //system's document icon
-    static NSData* documentIcon = nil;
     
     //skip 'short' paths
     // otherwise system logs an error
@@ -224,24 +225,6 @@ bail:
     {
         //extract icon
         self.icon = [[NSWorkspace sharedWorkspace] iconForFile:self.path];
-        
-        //load system document icon
-        // static var, so only load once
-        if(nil == documentIcon)
-        {
-            //load
-            documentIcon = [[[NSWorkspace sharedWorkspace] iconForFileType:
-                             NSFileTypeForHFSTypeCode(kGenericDocumentIcon)] TIFFRepresentation];
-        }
-        
-        //if 'iconForFile' method doesn't find and icon, it returns the system 'document' icon
-        // the system 'applicaiton' icon seems more applicable, so use that here...
-        if(YES == [[self.icon TIFFRepresentation] isEqual:documentIcon])
-        {
-            //set icon to system 'applicaiton' icon
-            self.icon = [[NSWorkspace sharedWorkspace]
-                         iconForFileType: NSFileTypeForHFSTypeCode(kGenericApplicationIcon)];
-        }
     }
     
     //make standard size...
@@ -252,39 +235,47 @@ bail:
     return;
 }
 
-//generate signing info
-// also classifies if Apple/from App Store/etc.
--(void)generateSigningInfo:(SecCSFlags)flags entitlements:(BOOL)entitlements
+//statically, generate signing info
+-(void)generateSigningInfo:(SecCSFlags)flags
 {
-    //extract signing info (do this first!)
-    // from Apple, App Store, signing authorities, etc
-    self.signingInfo = extractSigningInfo(self.path, flags, entitlements);
-    
-    //perform more signing checks and lists
-    // gotta be happily signed for checks though
-    if(0 == [self.signingInfo[KEY_SIGNATURE_STATUS] intValue])
-    {
-        //set flag for signed by Apple proper
-        self.isApple = [self.signingInfo[KEY_SIGNING_IS_APPLE] boolValue];
-        
-        //when not Apple proper
-        // check flag for from official App Store or is whitelisted
-        if(YES != isApple)
-        {
-            //set flag
-            self.isAppStore = [self.signingInfo[KEY_SIGNING_IS_APP_STORE] boolValue];
-        }
-    }
-    
+    //extract signing info statically
+    self.signingInfo = extractSigningInfo(0, self.path, flags);
+
     return;
 }
 
 //generate hash
 -(void)generateHash
 {
-    //hash
-    self.sha256 = PI_hashFile(self.path);
+    //file's contents
+    NSData* fileContents = nil;
     
+    //hash digest
+    uint8_t digestSHA256[CC_SHA256_DIGEST_LENGTH] = {0};
+    
+    //load file
+    if(nil == (fileContents = [NSData dataWithContentsOfFile:self.path]))
+    {
+        //bail
+        goto bail;
+    }
+    
+    //sha1 it
+    CC_SHA256(fileContents.bytes, (unsigned int)fileContents.length, digestSHA256);
+    
+    //now init
+    self.sha256 = [NSMutableString string];
+    
+    //convert to NSString
+    // iterate over each byte in computed digest and format
+    for(NSUInteger index=0; index < CC_SHA256_DIGEST_LENGTH; index++)
+    {
+        //format/append
+        [self.sha256 appendFormat:@"%02lX", (unsigned long)digestSHA256[index]];
+    }
+    
+bail:
+
     return;
 }
 
@@ -297,35 +288,32 @@ bail:
     if(nil == self.signingInfo)
     {
         //generate
-        [self generateSigningInfo:kSecCSDefaultFlags entitlements:NO];
+        [self generateSigningInfo:kSecCSDefaultFlags];
     }
     
     //validly signed binary?
     // use its signing identifier
     if( (noErr == [self.signingInfo[KEY_SIGNATURE_STATUS] intValue]) &&
-        (0 != [self.signingInfo[KEY_SIGNING_AUTHORITIES] count]) &&
+        (0 != [self.signingInfo[KEY_SIGNATURE_AUTHORITIES] count]) &&
         (nil != self.signingInfo[KEY_SIGNATURE_IDENTIFIER]) )
     {
         //use signing id
-        self.identifier  = self.signingInfo[KEY_SIGNATURE_IDENTIFIER];
+        self.identifier = self.signingInfo[KEY_SIGNATURE_IDENTIFIER];
     }
     //not validly signed or unsigned
     // generate sha256 hash for identifier
     else
     {
-        //hash
-        self.identifier = PI_hashFile(self.path);
+        //generate hash?
+        if(0 != self.sha256.length)
+        {
+            //hash
+            [self generateHash];
+        }
+        
+        //use hash
+        self.identifier = self.sha256;
     }
-    
-    return;
-}
-
-//generate entitlements
-// note: can also call 'generateSigningInfo' w/ 'entitlements:YES'
--(void)generateEntitlements
-{
-    //call into helper function
-    self.entitlements = extractEntitlements(self.path);
     
     return;
 }
@@ -334,7 +322,7 @@ bail:
 -(NSString *)description
 {
     //pretty print
-    return [NSString stringWithFormat: @"name: %@\npath: %@\nattributes: %@\nsigning info: %@ (isApple: %d / isAppStore: %d)", self.name, self.path, self.attributes, self.signingInfo, self.isApple, self.isAppStore];
+    return [NSString stringWithFormat: @"name: %@\npath: %@\nattributes: %@\nsigning info: %@", self.name, self.path, self.attributes, self.signingInfo];
 }
 
 @end

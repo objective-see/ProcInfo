@@ -45,7 +45,7 @@
 
 //init
 // just check OS version
--(id _Nullable )init
+-(id _Nullable)init
 {
     //super
     self = [super init];
@@ -73,7 +73,7 @@ bail:
 
 //init w/ flag
 // flag dictates if CPU-intensive logic (code signing, etc) should be preformed
--(id _Nullable )init:(BOOL)goEasy;
+-(id _Nullable)init:(BOOL)goEasy;
 {
     //init
     // calls 'super' too
@@ -486,7 +486,7 @@ bail:
                         //handle process starts
                         else
                         {
-                            //try get process path
+                            //also try get process path
                             // this is the most 'trusted way' (since exec_args can change)
                             [process pathFromPid];
                             
@@ -661,11 +661,14 @@ bail:
     return;
 }
 
-
 //handle new process
 // create Binary obj/enum/process ancestors, etc
 -(void)handleProcessStart:(Process*)process
 {
+    //default cs flags
+    // note: since this is dynamic check, we don't need to check all architectures, or skip resources, etc...
+    SecCSFlags flags = kSecCSDefaultFlags;
+    
     //sanity check
     // should only occur for fork() events, which normally get superceeded by an exec(), etc
     if( (-1 == process.pid) ||
@@ -705,7 +708,8 @@ bail:
     if(YES != self.goEasy)
     {
         //generate signing info
-        [process.binary generateSigningInfo:kSecCSCheckAllArchitectures entitlements:NO];
+        // first will try dynamic, falling back to static
+        [process generateSigningInfo:flags];
     
         //set icon
         [process.binary getIcon];
@@ -732,6 +736,10 @@ bail:
 //return array of running processes
 -(NSMutableArray*)currentProcesses
 {
+    //default cs flags
+    // note: since this is dynamic check, we don't need to check all architectures, or skip resources, etc...
+    SecCSFlags flags = kSecCSDefaultFlags;
+    
     //current process
     Process* currentProcess = nil;
     
@@ -745,15 +753,8 @@ bail:
     // init process object w/ pid/path, etc
     for(NSNumber* pid in PI_enumerateProcesses())
     {
-        //skip 'blank' pids
-        if(0 == pid.unsignedShortValue)
-        {
-            //skip
-            continue;
-        }
-        
         //create process obj
-        currentProcess = [[Process alloc] init:pid.unsignedShortValue];
+        currentProcess = [[Process alloc] init:pid.intValue];
         if(nil == currentProcess)
         {
             //skip
@@ -761,7 +762,7 @@ bail:
         }
         
         //generate signing info
-        [currentProcess.binary generateSigningInfo:kSecCSCheckAllArchitectures entitlements:NO];
+        [currentProcess generateSigningInfo:flags];
         
         //add
         [processes addObject:currentProcess];

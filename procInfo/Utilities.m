@@ -9,7 +9,6 @@
 
 #import "Consts.h"
 #import "Utilities.h"
-#import "AppReceipt.h"
 
 #import <libproc.h>
 #import <sys/sysctl.h>
@@ -123,9 +122,6 @@ bail:
 //enumerate all running processes
 NSMutableArray* PI_enumerateProcesses()
 {
-    //status
-    int status = -1;
-    
     //# of procs
     int numberOfProcesses = 0;
     
@@ -139,7 +135,12 @@ NSMutableArray* PI_enumerateProcesses()
     processes = [NSMutableArray array];
     
     //get # of procs
-    numberOfProcesses = proc_listpids(PROC_ALL_PIDS, 0, NULL, 0);
+    numberOfProcesses = proc_listallpids(NULL, 0);
+    if(-1 == numberOfProcesses)
+    {
+        //bail
+        goto bail;
+    }
     
     //alloc buffer for pids
     pids = calloc(numberOfProcesses, sizeof(pid_t));
@@ -150,8 +151,8 @@ NSMutableArray* PI_enumerateProcesses()
     }
     
     //get list of pids
-    status = proc_listpids(PROC_ALL_PIDS, 0, pids, numberOfProcesses * sizeof(pid_t));
-    if(status < 0)
+    numberOfProcesses = proc_listallpids(pids, numberOfProcesses*sizeof(pid_t));
+    if(-1 == numberOfProcesses)
     {
         //bail
         goto bail;
@@ -229,47 +230,6 @@ NSBundle* PI_findAppBundle(NSString* binaryPath)
     return appBundle;
 }
 
-//hash a file
-// algorithm: sha256
-NSString* PI_hashFile(NSString* filePath)
-{
-    //file's contents
-    NSData* fileContents = nil;
-
-    //hash digest
-    uint8_t digestSHA256[CC_SHA256_DIGEST_LENGTH] = {0};
-    
-    //hash as string
-    NSMutableString* sha256 = nil;
-    
-    //index var
-    NSUInteger index = 0;
-    
-    //init
-    sha256 = [NSMutableString string];
-    
-    //load file
-    if(nil == (fileContents = [NSData dataWithContentsOfFile:filePath]))
-    {
-        //bail
-        goto bail;
-    }
-
-    //sha1 it
-    CC_SHA256(fileContents.bytes, (unsigned int)fileContents.length, digestSHA256);
-    
-    //convert to NSString
-    // iterate over each bytes in computed digest and format
-    for(index=0; index < CC_SHA256_DIGEST_LENGTH; index++)
-    {
-        //format/append
-        [sha256 appendFormat:@"%02lX", (unsigned long)digestSHA256[index]];
-    }
-    
-bail:
-    
-    return sha256;
-}
 
 //given a 'short' path or process name
 // try find the full path by scanning $PATH
@@ -318,155 +278,4 @@ NSString* PI_which(NSString* processName)
     }//for path components
     
     return fullPath;
-}
-
-//exec a process with args
-NSMutableDictionary* PI_execTask(NSString* binaryPath, NSArray* arguments, BOOL shouldWait, BOOL grabOutput)
-{
-    //task
-    NSTask* task = nil;
-    
-    //output pipe for stdout
-    NSPipe* stdOutPipe = nil;
-    
-    //output pipe for stderr
-    NSPipe* stdErrPipe = nil;
-    
-    //read handle for stdout
-    NSFileHandle* stdOutReadHandle = nil;
-    
-    //read handle for stderr
-    NSFileHandle* stdErrReadHandle = nil;
-    
-    //results dictionary
-    NSMutableDictionary* results = nil;
-    
-    //output for stdout
-    NSMutableData *stdOutData = nil;
-    
-    //output for stderr
-    NSMutableData *stdErrData = nil;
-    
-    //init dictionary for results
-    results = [NSMutableDictionary dictionary];
-    
-    //init task
-    task = [[NSTask alloc] init];
-    
-    //only setup pipes if wait flag is set
-    if(YES == grabOutput)
-    {
-        //init stdout pipe
-        stdOutPipe = [NSPipe pipe];
-        
-        //init stderr pipe
-        stdErrPipe = [NSPipe pipe];
-        
-        //init stdout read handle
-        stdOutReadHandle = [stdOutPipe fileHandleForReading];
-        
-        //init stderr read handle
-        stdErrReadHandle = [stdErrPipe fileHandleForReading];
-        
-        //init stdout output buffer
-        stdOutData = [NSMutableData data];
-        
-        //init stderr output buffer
-        stdErrData = [NSMutableData data];
-        
-        //set task's stdout
-        task.standardOutput = stdOutPipe;
-        
-        //set task's stderr
-        task.standardError = stdErrPipe;
-    }
-    
-    //set task's path
-    task.launchPath = binaryPath;
-    
-    //set task's args
-    if(nil != arguments)
-    {
-        //set
-        task.arguments = arguments;
-    }
-    
-    //wrap task launch
-    @try
-    {
-        //launch
-        [task launch];
-    }
-    @catch(NSException *exception)
-    {
-        //bail
-        goto bail;
-    }
-    
-    //no need to wait
-    // can just bail w/ no output
-    if( (YES != shouldWait) &&
-        (YES != grabOutput) )
-    {
-        //bail
-        goto bail;
-    }
-    
-    
-    //wait
-    // ...but no output
-    else if( (YES == shouldWait) &&
-            (YES != grabOutput) )
-    {
-        //wait
-        [task waitUntilExit];
-        
-        //add exit code
-        results[EXIT_CODE] = [NSNumber numberWithInteger:task.terminationStatus];
-        
-        //bail
-        goto bail;
-    }
-    
-    //grab output?
-    // even if wait not set, still will wait!
-    else
-    {
-        //read in stdout/stderr
-        while(YES == [task isRunning])
-        {
-            //accumulate stdout
-            [stdOutData appendData:[stdOutReadHandle readDataToEndOfFile]];
-            
-            //accumulate stderr
-            [stdErrData appendData:[stdErrReadHandle readDataToEndOfFile]];
-        }
-        
-        //grab any leftover stdout
-        [stdOutData appendData:[stdOutReadHandle readDataToEndOfFile]];
-        
-        //grab any leftover stderr
-        [stdErrData appendData:[stdErrReadHandle readDataToEndOfFile]];
-        
-        //add stdout
-        if(0 != stdOutData.length)
-        {
-            //add
-            results[STDOUT] = stdOutData;
-        }
-        
-        //add stderr
-        if(0 != stdErrData.length)
-        {
-            //add
-            results[STDERR] = stdErrData;
-        }
-        
-        //add exit code
-        results[EXIT_CODE] = [NSNumber numberWithInteger:task.terminationStatus];
-    }
-    
-bail:
-    
-    return results;
 }

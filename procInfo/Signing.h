@@ -15,25 +15,18 @@
 
 /* FUNCTIONS */
 
-//get the signing info of a file
-NSMutableDictionary* extractSigningInfo(NSString* path, SecCSFlags flags, BOOL entitlements);
+//get the signing info of a item
+// pid specified: extract dynamic code signing info
+// path specified: generate static code signing info
+NSMutableDictionary* extractSigningInfo(pid_t pid, NSString* path, SecCSFlags flags);
 
-//determine if a file is signed by Apple proper
-BOOL isApple(NSString* path, SecCSFlags flags);
+//determine who signed item
+NSNumber* extractSigner(SecStaticCodeRef code, SecCSFlags flags, BOOL isDynamic);
 
-//determine if file is signed with Apple Dev ID/cert
-BOOL isSignedDevID(NSString* path, SecCSFlags flags);
+//validate a requirement
+OSStatus validateRequirement(SecStaticCodeRef code, SecRequirementRef requirement, SecCSFlags flags, BOOL isDynamic);
 
-//determine if a file is from the app store
-// gotta be signed w/ Apple Dev ID & have valid app receipt
-BOOL fromAppStore(NSString* path);
-
-//get GUID (really just computer's MAC address)
-// from Apple's 'Get the GUID in OS X' (see: 'Validating Receipts Locally')
-NSData* getGUID(void);
-
-//extact entitlements
-// note: execs apple's 'codesign' binary
-NSDictionary* extractEntitlements(NSString* path);
+//extract (names) of signing auths
+NSMutableArray* extractSigningAuths(NSDictionary* signingDetails);
 
 #endif

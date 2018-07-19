@@ -7,6 +7,7 @@
 //  License:    Creative Commons Attribution-NonCommercial 4.0 International License
 //
 
+#import "Signing.h"
 #import "procInfo.h"
 #import "Utilities.h"
 
@@ -19,6 +20,7 @@
 @synthesize ancestors;
 @synthesize arguments;
 @synthesize timestamp;
+@synthesize signingInfo;
 
 //init
 -(id)init
@@ -211,69 +213,72 @@ bail:
     //clear out buffer
     bzero(pathBuffer, PROC_PIDPATHINFO_MAXSIZE);
     
-    //first attempt to get path via 'proc_pidpath()'
+    //1st:
+    // attempt to get path via 'proc_pidpath()'
     status = proc_pidpath(self.pid, pathBuffer, sizeof(pathBuffer));
     if( (0 != status) &&
         (0 != strlen(pathBuffer)) )
     {
         //init path
         self.path = [NSString stringWithUTF8String:pathBuffer];
+        
+        //all set
+        goto bail;
     }
-    //otherwise
+    
+    //2nd:
     // try via process's args ('KERN_PROCARGS2')
-    else
+   
+    //init mib
+    // want system's size for max args
+    mib[0] = CTL_KERN;
+    mib[1] = KERN_ARGMAX;
+        
+    //set size
+    size = sizeof(systemMaxArgs);
+    
+    //get system's size for max args
+    if(-1 == sysctl(mib, 2, &systemMaxArgs, &size, NULL, 0))
     {
-        //init mib
-        // want system's size for max args
-        mib[0] = CTL_KERN;
-        mib[1] = KERN_ARGMAX;
-        
-        //set size
-        size = sizeof(systemMaxArgs);
-        
-        //get system's size for max args
-        if(-1 == sysctl(mib, 2, &systemMaxArgs, &size, NULL, 0))
-        {
-            //bail
-            goto bail;
-        }
-        
-        //alloc space for args
-        processArgs = calloc(systemMaxArgs, sizeof(char));
-        if(NULL == processArgs)
-        {
-            //bail
-            goto bail;
-        }
-        
-        //init mib
-        // want process args
-        mib[0] = CTL_KERN;
-        mib[1] = KERN_PROCARGS2;
-        mib[2] = pid;
-        
-        //set size
-        size = (size_t)systemMaxArgs;
-        
-        //get process's args
-        if(-1 == sysctl(mib, 3, processArgs, &size, NULL, 0))
-        {
-            //bail
-            goto bail;
-        }
-        
-        //sanity check
-        // ensure buffer is somewhat sane
-        if(size <= sizeof(int))
-        {
-            //bail
-            goto bail;
-        }
-        
-        //extract process name
-        // follows # of args (int) and is NULL-terminated
-        self.path = [NSString stringWithUTF8String:processArgs + sizeof(int)];
+        //bail
+        goto bail;
     }
+    
+    //alloc space for args
+    processArgs = calloc(systemMaxArgs, sizeof(char));
+    if(NULL == processArgs)
+    {
+        //bail
+        goto bail;
+    }
+    
+    //init mib
+    // want process args
+    mib[0] = CTL_KERN;
+    mib[1] = KERN_PROCARGS2;
+    mib[2] = pid;
+    
+    //set size
+    size = (size_t)systemMaxArgs;
+    
+    //get process's args
+    if(-1 == sysctl(mib, 3, processArgs, &size, NULL, 0))
+    {
+        //bail
+        goto bail;
+    }
+    
+    //sanity check
+    // ensure buffer is somewhat sane
+    if(size <= sizeof(int))
+    {
+        //bail
+        goto bail;
+    }
+    
+    //extract process name
+    // follows # of args (int) and is NULL-terminated
+    self.path = [NSString stringWithUTF8String:processArgs + sizeof(int)];
     
 bail:
     
@@ -488,11 +493,33 @@ bail:
     return;
 }
 
+//generate signing info
+// also classifies if Apple/from App Store/etc.
+-(void)generateSigningInfo:(SecCSFlags)flags
+{
+    //extract signing info dynamically
+    self.signingInfo = extractSigningInfo(self.pid, nil, flags);
+    
+    //failed?
+    // try extract signing info statically
+    if(nil == self.signingInfo)
+    {
+        //add 'all archs' / 'nested'
+        // cuz don't know which is/was running
+        flags |= kSecCSCheckAllArchitectures | kSecCSCheckNestedCode | kSecCSDoNotValidateResources;
+        
+        //extract signing info statically
+        self.signingInfo = extractSigningInfo(0, self.binary.path, flags);
+    }
+
+    return;
+}
+
 //for pretty printing
 -(NSString *)description
 {
     //pretty print
-    return [NSString stringWithFormat: @"pid: %d\npath: %@\nuser: %d\nargs: %@\nancestors: %@\nbinary:\n%@", self.pid, self.path, self.uid, self.arguments, self.ancestors, self.binary];
+    return [NSString stringWithFormat: @"pid: %d\npath: %@\nuser: %d\nargs: %@\nancestors: %@\n signing info: %@\n binary:\n%@", self.pid, self.path, self.uid, self.arguments, self.ancestors, self.signingInfo, self.binary];
 }
 
 //class method to get parent of arbitrary process
@@ -532,6 +559,5 @@ bail:
     
     return parentID;
 }
-
 
 @end

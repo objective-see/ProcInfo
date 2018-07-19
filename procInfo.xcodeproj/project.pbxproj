@@ -15,8 +15,6 @@
 		7DD0A9351F35A04B000EA15D /* Signing.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DD0A9271F35A04B000EA15D /* Signing.m */; };
 		7DD0A9361F35A04B000EA15D /* Signing.h in Headers */ = {isa = PBXBuildFile; fileRef = 7DD0A9281F35A04B000EA15D /* Signing.h */; };
 		7DD0A9371F35A04B000EA15D /* Consts.h in Headers */ = {isa = PBXBuildFile; fileRef = 7DD0A9291F35A04B000EA15D /* Consts.h */; };
-		7DD0A9381F35A04B000EA15D /* AppReceipt.h in Headers */ = {isa = PBXBuildFile; fileRef = 7DD0A92A1F35A04B000EA15D /* AppReceipt.h */; };
-		7DD0A9391F35A04B000EA15D /* AppReceipt.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DD0A92B1F35A04B000EA15D /* AppReceipt.m */; };
 		7DD0A9471F37F373000EA15D /* procInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 7DD0A9461F37F373000EA15D /* procInfo.h */; };
 /* End PBXBuildFile section */
 
@@ -30,8 +28,6 @@
 		7DD0A9271F35A04B000EA15D /* Signing.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Signing.m; path = procInfo/Signing.m; sourceTree = SOURCE_ROOT; };
 		7DD0A9281F35A04B000EA15D /* Signing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Signing.h; path = procInfo/Signing.h; sourceTree = SOURCE_ROOT; };
 		7DD0A9291F35A04B000EA15D /* Consts.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Consts.h; path = procInfo/Consts.h; sourceTree = SOURCE_ROOT; };
-		7DD0A92A1F35A04B000EA15D /* AppReceipt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppReceipt.h; path = procInfo/AppReceipt.h; sourceTree = SOURCE_ROOT; };
-		7DD0A92B1F35A04B000EA15D /* AppReceipt.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppReceipt.m; path = procInfo/AppReceipt.m; sourceTree = SOURCE_ROOT; };
 		7DD0A9461F37F373000EA15D /* procInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = procInfo.h; path = procInfo/procInfo.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -75,8 +71,6 @@
 		7D83A9E61EB6465D001506F0 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				7DD0A92A1F35A04B000EA15D /* AppReceipt.h */,
-				7DD0A92B1F35A04B000EA15D /* AppReceipt.m */,
 				7DD0A9211F35A04B000EA15D /* Binary.m */,
 				7DD0A9291F35A04B000EA15D /* Consts.h */,
 				7DD0A9221F35A04B000EA15D /* Process.m */,
@@ -97,7 +91,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7DD0A9381F35A04B000EA15D /* AppReceipt.h in Headers */,
 				7DD0A9331F35A04B000EA15D /* Utilities.h in Headers */,
 				7DD0A9471F37F373000EA15D /* procInfo.h in Headers */,
 				7DD0A9371F35A04B000EA15D /* Consts.h in Headers */,
@@ -131,7 +124,7 @@
 		7D83A9DC1EB6465D001506F0 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0900;
+				LastUpgradeCheck = 0940;
 				ORGANIZATIONNAME = "Objective-See";
 				TargetAttributes = {
 					7D83A9E31EB6465D001506F0 = {
@@ -183,7 +176,6 @@
 				7DD0A92F1F35A04B000EA15D /* Binary.m in Sources */,
 				7DD0A92D1F35A04B000EA15D /* ProcessMonitor.m in Sources */,
 				7DD0A9321F35A04B000EA15D /* Utilities.m in Sources */,
-				7DD0A9391F35A04B000EA15D /* AppReceipt.m in Sources */,
 				7DD0A9351F35A04B000EA15D /* Signing.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -204,6 +196,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -211,6 +204,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -257,6 +251,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -264,6 +259,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
