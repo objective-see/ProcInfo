@@ -38,97 +38,100 @@ NSMutableDictionary* extractSigningInfo(pid_t pid, NSString* path, SecCSFlags fl
     //signing authorities
     NSMutableArray* signingAuths = nil;
     
+    //init signing status
+    signingInfo = [NSMutableDictionary dictionary];
+    
     //dynamic code checks
     // no path, dynamic check via pid
     if(nil == path)
     {
         //generate dynamic code ref via pid
-        if(errSecSuccess != SecCodeCopyGuestWithAttributes(NULL, (__bridge CFDictionaryRef _Nullable)(@{(__bridge NSString *)kSecGuestAttributePid : [NSNumber numberWithInt:pid]}), kSecCSDefaultFlags, &dynamicCode))
+        status = SecCodeCopyGuestWithAttributes(NULL, (__bridge CFDictionaryRef _Nullable)(@{(__bridge NSString *)kSecGuestAttributePid : [NSNumber numberWithInt:pid]}), kSecCSDefaultFlags, &dynamicCode);
+        if(errSecSuccess != status)
         {
+            //set error
+            signingInfo[KEY_SIGNATURE_STATUS] = [NSNumber numberWithInt:status];
+            
             //bail
             goto bail;
         }
-        
-        //now, init signing status
-        signingInfo = [NSMutableDictionary dictionary];
-        
+    
         //validate code
         status = SecCodeCheckValidity(dynamicCode, flags, NULL);
-        
-        //save result
-        signingInfo[KEY_SIGNATURE_STATUS] = [NSNumber numberWithInt:status];
-        
-        //sanity check
-        // bail on error
         if(errSecSuccess != status)
         {
+            //set error
+            signingInfo[KEY_SIGNATURE_STATUS] = [NSNumber numberWithInt:status];
+            
             //bail
             goto bail;
         }
         
-        //extract signing info
-        status = SecCodeCopySigningInformation(dynamicCode, kSecCSSigningInformation, &signingDetails);
-        
-        //save result
-        signingInfo[KEY_SIGNATURE_STATUS] = [NSNumber numberWithInt:status];
-        
-        //sanity check
-        // bail on error
-        if(errSecSuccess != status)
-        {
-            //bail
-            goto bail;
-        }
+        //happily signed
+        signingInfo[KEY_SIGNATURE_STATUS] = [NSNumber numberWithInt:errSecSuccess];
         
         //determine signer
         // apple, app store, dev id, adhoc, etc...
         signingInfo[KEY_SIGNATURE_SIGNER] = extractSigner(dynamicCode, flags, YES);
+        
+        //extract signing info
+        status = SecCodeCopySigningInformation(dynamicCode, kSecCSSigningInformation, &signingDetails);
+        if(errSecSuccess != status)
+        {
+            //bail
+            goto bail;
+        }
     }
     
     //static code checks
     else
     {
         //create static code ref via path
-        if(errSecSuccess != SecStaticCodeCreateWithPath((__bridge CFURLRef)([NSURL fileURLWithPath:path]), kSecCSDefaultFlags, &staticCode))
+        status = SecStaticCodeCreateWithPath((__bridge CFURLRef)([NSURL fileURLWithPath:path]), kSecCSDefaultFlags, &staticCode);
+        if(errSecSuccess != status)
         {
+            //set error
+            signingInfo[KEY_SIGNATURE_STATUS] = [NSNumber numberWithInt:status];
+            
             //bail
             goto bail;
         }
-        
-        //now, init signing status
-        signingInfo = [NSMutableDictionary dictionary];
         
         //check signature
         status = SecStaticCodeCheckValidity(staticCode, flags, NULL);
-        
-        //save result
-        signingInfo[KEY_SIGNATURE_STATUS] = [NSNumber numberWithInt:status];
-        
-        //sanity check
-        // bail on error
         if(errSecSuccess != status)
         {
+            //set error
+            signingInfo[KEY_SIGNATURE_STATUS] = [NSNumber numberWithInt:status];
+            
             //bail
             goto bail;
         }
         
-        //extract signing info
-        status = SecCodeCopySigningInformation(staticCode, kSecCSSigningInformation, &signingDetails);
-        
-        //save result
-        signingInfo[KEY_SIGNATURE_STATUS] = [NSNumber numberWithInt:status];
-        
-        //sanity check
-        // bail on error
-        if(errSecSuccess != status)
-        {
-            //bail
-            goto bail;
-        }
+        //happily signed
+        signingInfo[KEY_SIGNATURE_STATUS] = [NSNumber numberWithInt:errSecSuccess];
         
         //determine signer
         // apple, app store, dev id, adhoc, etc...
         signingInfo[KEY_SIGNATURE_SIGNER] = extractSigner(staticCode, flags, NO);
+        
+        //extract signing info
+        status = SecCodeCopySigningInformation(staticCode, kSecCSSigningInformation, &signingDetails);
+        if(errSecSuccess != status)
+        {
+            //bail
+            goto bail;
+        }
+    }
+    
+    //invalid params
+    else
+    {
+        //set error
+        signingInfo[KEY_SIGNATURE_STATUS] = [NSNumber numberWithInt:errSecParam];
+        
+        //bail
+        goto bail;
     }
     
     //extract code signing id
@@ -298,9 +301,13 @@ NSMutableArray* extractSigningAuths(NSDictionary* signingDetails)
     
     //get cert chain
     certificateChain = [signingDetails objectForKey:(__bridge NSString*)kSecCodeInfoCertificates];
+    if(0 == certificateChain.count)
+    {
+        //no certs
+        goto bail;
+    }
     
-    //get name of all certs
-    // add each to list
+    //extract/save name of all certs
     for(index = 0; index < certificateChain.count; index++)
     {
         //reset
@@ -310,25 +317,18 @@ NSMutableArray* extractSigningAuths(NSDictionary* signingDetails)
         certificate = (__bridge SecCertificateRef)([certificateChain objectAtIndex:index]);
         
         //get common name
-        if(errSecSuccess != SecCertificateCopyCommonName(certificate, &commonName))
+        if( (errSecSuccess == SecCertificateCopyCommonName(certificate, &commonName)) &&
+            (NULL != commonName) )
         {
-            //release
-            if(NULL != commonName)
-            {
-                //release
-                CFRelease(commonName);
-            }
+            //save
+            [authorities addObject:(__bridge id _Nonnull)(commonName)];
             
-            //next
-            continue;
+            //release
+            CFRelease(commonName);
         }
-        
-        //save
-        [authorities addObject:(__bridge NSString*)commonName];
-        
-        //release name
-        CFRelease(commonName);
     }
+        
+bail:
     
     return authorities;
 }
