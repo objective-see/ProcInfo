@@ -15,7 +15,7 @@
 		7DD0A9351F35A04B000EA15D /* Signing.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DD0A9271F35A04B000EA15D /* Signing.m */; };
 		7DD0A9361F35A04B000EA15D /* Signing.h in Headers */ = {isa = PBXBuildFile; fileRef = 7DD0A9281F35A04B000EA15D /* Signing.h */; };
 		7DD0A9371F35A04B000EA15D /* Consts.h in Headers */ = {isa = PBXBuildFile; fileRef = 7DD0A9291F35A04B000EA15D /* Consts.h */; };
-		7DD0A9471F37F373000EA15D /* procInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 7DD0A9461F37F373000EA15D /* procInfo.h */; };
+		CD5A50262104AFF100218BDF /* procInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = CD5A50252104AFF100218BDF /* procInfo.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,7 +28,7 @@
 		7DD0A9271F35A04B000EA15D /* Signing.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Signing.m; path = procInfo/Signing.m; sourceTree = SOURCE_ROOT; };
 		7DD0A9281F35A04B000EA15D /* Signing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Signing.h; path = procInfo/Signing.h; sourceTree = SOURCE_ROOT; };
 		7DD0A9291F35A04B000EA15D /* Consts.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Consts.h; path = procInfo/Consts.h; sourceTree = SOURCE_ROOT; };
-		7DD0A9461F37F373000EA15D /* procInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = procInfo.h; path = procInfo/procInfo.h; sourceTree = "<group>"; };
+		CD5A50252104AFF100218BDF /* procInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = procInfo.h; path = ../../ProcInfoExample/lib/procInfo.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -42,17 +42,10 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		7D6E875D1F381BC600D6BD7C /* include */ = {
-			isa = PBXGroup;
-			children = (
-				7DD0A9461F37F373000EA15D /* procInfo.h */,
-			);
-			name = include;
-			sourceTree = "<group>";
-		};
 		7D6E87751F3BD0C200D6BD7C /* lib */ = {
 			isa = PBXGroup;
 			children = (
+				CD5A50252104AFF100218BDF /* procInfo.h */,
 				7D6E87761F3BD0FA00D6BD7C /* libprocInfo.a */,
 			);
 			name = lib;
@@ -63,7 +56,6 @@
 			isa = PBXGroup;
 			children = (
 				7D83A9E61EB6465D001506F0 /* src */,
-				7D6E875D1F381BC600D6BD7C /* include */,
 				7D6E87751F3BD0C200D6BD7C /* lib */,
 			);
 			sourceTree = "<group>";
@@ -91,8 +83,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CD5A50262104AFF100218BDF /* procInfo.h in Headers */,
 				7DD0A9331F35A04B000EA15D /* Utilities.h in Headers */,
-				7DD0A9471F37F373000EA15D /* procInfo.h in Headers */,
 				7DD0A9371F35A04B000EA15D /* Consts.h in Headers */,
 				7DD0A9361F35A04B000EA15D /* Signing.h in Headers */,
 			);
@@ -163,7 +155,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#move library into top-level lib folder\nmv $CODESIGNING_FOLDER_PATH $SRCROOT/lib/\n\n#copy header file into top-level lib folder\ncp $SRCROOT/procInfo/procInfo.h $SRCROOT/lib/";
+			shellScript = "#move library into top-level lib folder\nmv $CODESIGNING_FOLDER_PATH $SRCROOT/lib/";
 		};
 /* End PBXShellScriptBuildPhase section */
 

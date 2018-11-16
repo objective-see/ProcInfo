@@ -124,16 +124,6 @@ NSMutableDictionary* extractSigningInfo(pid_t pid, NSString* path, SecCSFlags fl
         }
     }
     
-    //invalid params
-    else
-    {
-        //set error
-        signingInfo[KEY_SIGNATURE_STATUS] = [NSNumber numberWithInt:errSecParam];
-        
-        //bail
-        goto bail;
-    }
-    
     //extract code signing id
     if(nil != [(__bridge NSDictionary*)signingDetails objectForKey:(__bridge NSString*)kSecCodeInfoIdentifier])
     {

@@ -254,13 +254,18 @@ bail:
     uint8_t digestSHA256[CC_SHA256_DIGEST_LENGTH] = {0};
     
     //load file
-    if(nil == (fileContents = [NSData dataWithContentsOfFile:self.path]))
+    fileContents = [NSData dataWithContentsOfFile:self.path];
+    if( (0 == fileContents.length) ||
+        (NULL == fileContents.bytes) )
     {
         //bail
         goto bail;
     }
     
-    //sha1 it
+    //clear buffer
+    bzero(digestSHA256, CC_SHA256_DIGEST_LENGTH);
+    
+    //sha it
     CC_SHA256(fileContents.bytes, (unsigned int)fileContents.length, digestSHA256);
     
     //now init
@@ -271,7 +276,7 @@ bail:
     for(NSUInteger index=0; index < CC_SHA256_DIGEST_LENGTH; index++)
     {
         //format/append
-        [self.sha256 appendFormat:@"%02lX", (unsigned long)digestSHA256[index]];
+        [self.sha256 appendFormat:@"%02X", digestSHA256[index]];
     }
     
 bail:
