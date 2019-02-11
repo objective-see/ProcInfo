@@ -48,8 +48,7 @@
 				CD6DE4D4219EA0BD0058094E /* procInfo.h */,
 				7D6E87761F3BD0FA00D6BD7C /* libprocInfo.a */,
 			);
-			name = lib;
-			path = processMonitor;
+			path = lib;
 			sourceTree = "<group>";
 		};
 		7D83A9DB1EB6465D001506F0 = {
@@ -73,7 +72,7 @@
 				7DD0A9241F35A04B000EA15D /* Utilities.m */,
 			);
 			name = src;
-			path = processMonitor;
+			path = procInfo;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

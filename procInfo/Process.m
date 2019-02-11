@@ -75,8 +75,12 @@
         [self pathFromPid];
         if(0 == self.path.length)
         {
+            #ifdef DEBUG
+            
             //err msg
             NSLog(@"ERROR: failed to find path for process %d\n", self.pid);
+            
+            #endif
             
             //unset
             self = nil;

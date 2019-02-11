@@ -192,8 +192,12 @@ bail:
     auditFile = fopen(AUDIT_PIPE, "r");
     if(auditFile == NULL)
     {
+        #ifdef DEBUG
+        
         //err msg
         NSLog(@"ERROR: failed to open audit pipe %s", AUDIT_PIPE);
+        
+        #endif
         
         //bail
         goto bail;
@@ -629,8 +633,12 @@ bail:
         process = [[Process alloc] init:processID];
         if(nil == process)
         {
+            #ifdef DEBUG
+            
             //err msg
             NSLog(@"ERROR: failed to create process object for %d/%@", processID, notification.userInfo);
+            
+            #endif
             
             //bail
             goto bail;
@@ -696,8 +704,12 @@ bail:
     process.binary = [[Binary alloc] init:process.path];
     if(nil == process.binary)
     {
+        #ifdef DEBUG
+        
         //err msg
         NSLog(@"ERROR: failed to create binary object for %d/%@", process.pid, process.path);
+        
+        #endif
         
         //bail
         goto bail;
