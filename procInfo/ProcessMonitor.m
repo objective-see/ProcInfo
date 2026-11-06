@@ -447,8 +447,16 @@ bail:
                     for(int i = 0; i<tokenStruct.tt.execarg.count; i++)
                     {
                         //try create arg
-                        // this sometimes fails, not sure why?
+                        // fails if arg isn't valid UTF8 (e.g. "report_na\xAFve.txt")
                         argument = [NSString stringWithUTF8String:tokenStruct.tt.execarg.text[i]];
+
+                        //fall back to lossy decoding (Mac Roman maps every byte, so can't fail)
+                        if(nil == argument)
+                        {
+                            argument = [[NSString alloc] initWithCString:tokenStruct.tt.execarg.text[i] encoding:NSMacOSRomanStringEncoding];
+                        }
+
+                        //still nil? skip
                         if(nil == argument)
                         {
                             //next

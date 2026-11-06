@@ -338,7 +338,14 @@ bail:
     
     //# of args
     int numberOfArgs = 0;
-    
+
+    //# of args parsed so far
+    // note: tracked separately from 'arguments' array, since conversion can fail
+    int parsedArgs = 0;
+
+    //arg
+    NSString* argument = nil;
+
     //start of (each) arg
     char* argStart = NULL;
     
@@ -463,15 +470,33 @@ bail:
             //save arg
             if(NULL != argStart)
             {
+                //try convert
+                argument = [NSString stringWithUTF8String:argStart];
+
+                //not valid UTF8?
+                // fall back to lossy decoding (Mac Roman maps every byte, so can't fail)
+                // note: adding nil would throw (NSInvalidArgumentException), crashing the client
+                if(nil == argument)
+                {
+                    argument = [[NSString alloc] initWithCString:argStart encoding:NSMacOSRomanStringEncoding];
+                }
+
                 //save
-                [self.arguments addObject:[NSString stringWithUTF8String:argStart]];
+                if(nil != argument)
+                {
+                    [self.arguments addObject:argument];
+                }
+
+                //inc
+                parsedArgs++;
             }
-            
+
             //init string pointer to (possibly) next arg
             argStart = ++parser;
-            
+
             //bail if we've hit arg cnt
-            if(self.arguments.count == numberOfArgs)
+            // note: compare against # parsed (not # saved), otherwise we'd scan past argv
+            if(parsedArgs == numberOfArgs)
             {
                 //bail
                 break;
